@@ -1,0 +1,47 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <!-- Her bir metin <string> etiketi ile tanımlanır -->
+    <!-- name: Kod içinde bu metne erişmek için kullanacağın benzersiz ID (anahtar) -->
+    <string name="app_name">QuizNova</string> <!-- Örnek: Uygulama adı -->
+    <string name="hello_world">Merhaba Dünya!</string>
+    <string name="ok_button">Tamam</string>
+
+    <!-- Önceki QuizScreen kodumuzdan örnekler -->
+    <string name="cd_back">Geri</string>
+    <string name="quiz_exit_dialog_title">Quiz\'den Çık</string> <!-- Kesme işareti için \ kullan -->
+    <string name="quiz_exit_dialog_message">Emin misiniz? İlerlemeniz kaybolacak.</string>
+    <string name="exit">Çık</string>
+    <string name="cancel">İptal</string>
+    <string name="error_unknown">Bilinmeyen bir hata oluştu.</string>
+    <string name="quiz_no_questions_found">Bu kategoride soru bulunamadı.</string>
+    <string name="quiz_next_question">Sonraki Soru</string>
+    <string name="quiz_finish">Bitir</string>
+    <string name="quiz_submit_answer">Cevabı Onayla</string>
+    <string name="cd_correct_answer">Doğru Cevap</string>
+    <string name="quiz_result_perfect">Mükemmel Skor!</string>
+    <string name="quiz_result_great">Harika İş!</string>
+    <string name="quiz_result_good">Fena Değil!</string>
+    <string name="quiz_result_bad">Daha İyi Olabilir</string>
+    <string name="quiz_result_summary">Özet</string>
+    <string name="quiz_result_back_to_categories">Kategoriler</string>
+    <string name="quiz_result_play_again">Tekrar Oyna</string>
+    <string name="retry">Tekrar Dene</string>
+    <string name="error_oops">Eyvah!</string>
+    <!-- Formatlama Örneği (Placeholder) -->
+    <!-- %1$d: Birinci argüman (integer), %2$d: İkinci argüman (integer) -->
+    <string name="score_display">Skorunuz: %1$d / %2$d</string>
+    <!-- %1$s: Birinci argüman (string) -->
+    <string name="welcome_message">Hoş geldin, %1$s!</string>
+
+    <!-- CategoryScreen için Yeni String'ler -->
+    <string name="category_screen_title">Kategoriler</string>
+    <string name="cd_more_options">Daha Fazla Seçenek</string>
+    <string name="menu_settings">Ayarlar</string>
+    <string name="menu_privacy_policy">Gizlilik Politikası</string>
+    <string name="url_privacy_policy">https://www.google.com</string> <!-- <<< BURAYI KENDİ GİZLİLİK POLİTİKASI URL'NİZ İLE DEĞİŞTİRİN! -->
+    <string name="menu_about">Hakkında</string>
+    <string name="category_section_all">Tüm Kategoriler</string>
+    <string name="category_empty_state">Hiç kategori bulunamadı!</string>
+    <string name="loading_categories">Kategoriler Yükleniyor...</string>
+
+</resources>
