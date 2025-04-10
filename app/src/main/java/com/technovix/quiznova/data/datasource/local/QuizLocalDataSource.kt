@@ -11,6 +11,6 @@ interface QuizLocalDataSource {
     suspend fun getQuestionCountByCategory(category: String): Int
 
     suspend fun insertCategories(categories: List<CategoryEntity>)
-    fun getAllCategories(): Flow<List<CategoryEntity>> // Flow dönebilir
+    fun getAllCategories(): Flow<List<CategoryEntity>>
     suspend fun getCategoryCount(): Int
 }

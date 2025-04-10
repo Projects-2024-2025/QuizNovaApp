@@ -12,15 +12,12 @@ class QuizRemoteDataSourceImpl @Inject constructor(
         return try {
             val response = api.getQuestions(amount, categoryId, difficulty, type)
             if (response.isSuccessful && response.body() != null) {
-                // Burada response code kontrolü de yapılabilir veya Repository'ye bırakılabilir
                 Resource.Success(response.body()!!)
             } else {
                 Resource.Error("API Error: ${response.code()} - ${response.message()}")
             }
         } catch (e: Exception) {
-            // Network hatası veya başka bir sorun
             Resource.Error(e.localizedMessage ?: "Unknown Remote Error")
         }
     }
-    // ... getCategories ...
 }

@@ -1,10 +1,10 @@
 package com.technovix.quiznova.ui.navigation
 
 import android.util.Log
+import androidx.compose.animation.*
 import androidx.compose.animation.core.tween
-import androidx.compose.animation.fadeIn
-import androidx.compose.animation.fadeOut
 import androidx.compose.runtime.Composable
+import androidx.compose.ui.unit.IntOffset
 import androidx.navigation.NavType
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
@@ -12,58 +12,82 @@ import androidx.navigation.compose.rememberNavController
 import androidx.navigation.navArgument
 import com.technovix.quiznova.ui.screen.category.CategoryScreen
 import com.technovix.quiznova.ui.screen.quiz.QuizScreen
+import com.technovix.quiznova.ui.screen.settings.SettingsScreen
+import com.technovix.quiznova.util.ThemePreference
 import com.technovix.quiznova.ui.screen.splash.SplashScreen
-import androidx.compose.animation.*
-import androidx.compose.ui.unit.IntOffset
 
-
-@OptIn(ExperimentalAnimationApi::class)
 @Composable
-fun AppNavigation() {
+fun AppNavigation(
+    // Tema state'i ve değiştiricisi parametre olarak eklendi
+    themePreference: ThemePreference,
+    onThemeChange: (ThemePreference) -> Unit
+) {
     val navController = rememberNavController()
-    // Animasyon süre ve offset ayarları
+    // Animasyon ayarları (isteğe bağlı)
     val animationSpec = tween<IntOffset>(durationMillis = 400)
     val fadeSpec = tween<Float>(durationMillis = 400)
 
     NavHost(
         navController = navController,
         startDestination = Screen.Splash.route,
-        // Daha yumuşak ve modern geçiş animasyonları
+        // Navigasyon animasyonları (isteğe bağlı)
         enterTransition = { slideInHorizontally(initialOffsetX = { it }, animationSpec = animationSpec) + fadeIn(fadeSpec) },
-        exitTransition = { slideOutHorizontally(targetOffsetX = { -it / 3 }, animationSpec = animationSpec) + fadeOut(fadeSpec) }, // Çıkarken daha az kaysın
+        exitTransition = { slideOutHorizontally(targetOffsetX = { -it / 3 }, animationSpec = animationSpec) + fadeOut(fadeSpec) },
         popEnterTransition = { slideInHorizontally(initialOffsetX = { -it }, animationSpec = animationSpec) + fadeIn(fadeSpec) },
-        popExitTransition = { slideOutHorizontally(targetOffsetX = { it / 3 }, animationSpec = animationSpec) + fadeOut(fadeSpec) } // Geri gelirken daha az kaysın
+        popExitTransition = { slideOutHorizontally(targetOffsetX = { it / 3 }, animationSpec = animationSpec) + fadeOut(fadeSpec) }
     ) {
+        // Splash Ekranı
         composable(
             route = Screen.Splash.route,
-            // Splash'tan çıkarken sadece fade out olsun
-            exitTransition = { fadeOut(animationSpec = tween(500)) }
+            exitTransition = { fadeOut(animationSpec = tween(500)) } // Splash'tan çıkarken sadece fade out
         ) {
             SplashScreen(navController = navController)
         }
+
+        // Kategori Ekranı
         composable(Screen.Category.route) {
-            CategoryScreen(navController = navController)
+            // CategoryScreen'e tema parametreleri iletiliyor
+            CategoryScreen(
+                navController = navController,
+                currentTheme = themePreference // Mevcut tema state'i
+            )
         }
+
+        // Quiz Ekranı
         composable(
             route = Screen.Quiz.route,
             arguments = listOf(
                 navArgument("categoryId") { type = NavType.IntType },
                 navArgument("categoryName") { type = NavType.StringType }
             )
-            // Quiz ekranı için özel geçişler gerekirse buraya eklenebilir
-            // enterTransition = { ... }
         ) { backStackEntry ->
             Log.d("AppNavigation", "QuizScreen composable entered. Args: ${backStackEntry.arguments}")
-            val categoryId = backStackEntry.arguments?.getInt("categoryId") ?: 0
-            val categoryName = backStackEntry.arguments?.getString("categoryName") ?: "Unknown"
+            // val categoryId = backStackEntry.arguments?.getInt("categoryId") ?: 0 // Gerekirse kullan
+            val categoryName = backStackEntry.arguments?.getString("categoryName") ?: "Quiz"
+
+            // QuizScreen'e tema parametresi iletiliyor
             QuizScreen(
                 navController = navController,
-                categoryId = categoryId,
-                categoryName = categoryName
+                categoryName = categoryName,
+                currentTheme = themePreference // Mevcut tema state'i
             )
         }
-        // Gelecekteki ekranlar için composable'lar buraya eklenecek
-        // composable(Screen.Settings.route) { SettingsScreen(...) }
-        // composable(Screen.About.route) { AboutScreen(...) }
+        composable(Screen.Settings.route) {
+            SettingsScreen(
+                navController = navController,
+                currentTheme = themePreference, // Mevcut temayı göstermek için
+                onThemeChange = onThemeChange   // Temayı değiştirmek için
+            )
+        }
+        // Gelecekteki ekranlar buraya eklenecek
+        /*
+        composable(Screen.Settings.route) {
+             SettingsScreen(
+                 currentTheme = themePreference,
+                 onThemeChange = onThemeChange,
+                 // ...
+             )
+        }
+        */
     }
 }

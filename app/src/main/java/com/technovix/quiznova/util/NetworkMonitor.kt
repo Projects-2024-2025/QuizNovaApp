@@ -21,37 +21,34 @@ class NetworkMonitor @Inject constructor(@ApplicationContext private val context
         context.getSystemService(Context.CONNECTIVITY_SERVICE) as ConnectivityManager
 
     val isOnline: Flow<Boolean> = callbackFlow {
-        // Başlangıç durumunu hemen gönder
         trySend(isCurrentlyConnected())
 
         val networkCallback = object : ConnectivityManager.NetworkCallback() {
             override fun onAvailable(network: Network) {
-                launch { send(true) } // Coroutine scope içinde gönder
+                launch { send(true) }
             }
 
             override fun onLost(network: Network) {
-                launch { send(false) } // Coroutine scope içinde gönder
+                launch { send(false) }
             }
 
             override fun onCapabilitiesChanged(network: Network, networkCapabilities: NetworkCapabilities) {
-                // Bazen onAvailable/onLost tetiklenmeyebilir, yetenek değişikliği ile kontrol et
                 launch { send(hasInternetCapability(networkCapabilities)) }
             }
         }
 
         val networkRequest = NetworkRequest.Builder()
-            .addCapability(NetworkCapabilities.NET_CAPABILITY_INTERNET) // İnternet erişimini dinle
+            .addCapability(NetworkCapabilities.NET_CAPABILITY_INTERNET)
             .addTransportType(NetworkCapabilities.TRANSPORT_WIFI)
             .addTransportType(NetworkCapabilities.TRANSPORT_CELLULAR)
             .build()
 
         connectivityManager.registerNetworkCallback(networkRequest, networkCallback)
 
-        // Flow kapatıldığında callback'i kaldır
         awaitClose {
             connectivityManager.unregisterNetworkCallback(networkCallback)
         }
-    }.distinctUntilChanged() // Sadece durum değiştiğinde yeni değer gönder
+    }.distinctUntilChanged()
 
     private fun isCurrentlyConnected(): Boolean {
         val activeNetwork = connectivityManager.activeNetwork
@@ -60,6 +57,6 @@ class NetworkMonitor @Inject constructor(@ApplicationContext private val context
 
     private fun hasInternetCapability(caps: NetworkCapabilities?): Boolean {
         return caps?.hasCapability(NetworkCapabilities.NET_CAPABILITY_INTERNET) == true &&
-                caps.hasCapability(NetworkCapabilities.NET_CAPABILITY_VALIDATED) == true // Gerçek internet erişimi var mı kontrolü
+                caps.hasCapability(NetworkCapabilities.NET_CAPABILITY_VALIDATED) == true
     }
 }

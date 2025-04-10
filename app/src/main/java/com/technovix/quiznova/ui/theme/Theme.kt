@@ -6,75 +6,121 @@ import androidx.compose.foundation.isSystemInDarkTheme
 import androidx.compose.material3.*
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.SideEffect
+import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.toArgb
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalView
 import androidx.core.view.WindowCompat
+import com.technovix.quiznova.util.ThemePreference
 
-// --- New Dark Color Scheme ---
+
 private val DarkColorScheme = darkColorScheme(
-    primary = VibrantPurple,           // Main vibrant color
-    onPrimary = TextColorDark,         // Text on primary (SoftIvory)
-    primaryContainer = Color(0xFF4D2C9A), // Darker purple container
+    primary = VibrantPurple,
+    onPrimary = Color.White,
+    primaryContainer = Color(0xFF4D2C9A),
     onPrimaryContainer = SoftIvory.copy(alpha = 0.9f),
-    secondary = SkyBlue,               // Secondary accent
-    onSecondary = DeepNavy,            // Dark text on light blue
-    secondaryContainer = Color(0xFF004A70), // Darker blue container
+    secondary = SkyBlue,
+    onSecondary = DeepNavy,
+    secondaryContainer = Color(0xFF004A70),
     onSecondaryContainer = SkyBlue.copy(alpha = 0.9f),
-    tertiary = VibrantPink,            // Tertiary accent
-    onTertiary = Color.White,          // White text on pink
-    tertiaryContainer = Color(0xFFB0003A), // Darker pink container
+    tertiary = VibrantPink,
+    onTertiary = Color.White,
+    tertiaryContainer = Color(0xFFB0003A),
     onTertiaryContainer = VibrantPink.copy(alpha = 0.9f),
-    background = BackgroundDark,       // DeepNavy
-    onBackground = TextColorDark,      // SoftIvory on DeepNavy
-    surface = SurfaceDark,             // Slightly lighter navy/purple
-    onSurface = TextColorDark,         // SoftIvory on SurfaceDark
-    surfaceVariant = SurfaceDark.copy(alpha = 0.7f), // For cards, slightly different
-    onSurfaceVariant = SubtleGrayDark, // Mid-tone gray text on surface variant
+    background = BackgroundDark,
+    onBackground = TextColorDark,
+    surface = SurfaceDark,
+    onSurface = TextColorDark,
+    surfaceVariant = SurfaceDark.copy(alpha = 0.7f),
+    onSurfaceVariant = SubtleGrayDark,
     error = ErrorRed,
     onError = Color.White,
     errorContainer = ErrorRed.copy(alpha = 0.2f),
     onErrorContainer = ErrorRed.copy(alpha = 0.9f),
-    outline = OutlineDark,             // Subtle gray outline
-    outlineVariant = OutlineDark.copy(alpha = 0.5f) // Slightly stronger outline variant
-    // inversePrimary, surfaceTint etc. can be left default or customized if needed
+    outline = OutlineDark,
+    outlineVariant = OutlineDark.copy(alpha = 0.5f),
+    inverseSurface = SurfaceLight,
+    inverseOnSurface = TextColorLight
 )
 
-// --- New Light Color Scheme ---
 private val LightColorScheme = lightColorScheme(
-    primary = VibrantPurple,           // Main vibrant color
-    onPrimary = Color.White,           // White text on purple
-    primaryContainer = VibrantPurple.copy(alpha = 0.15f), // Light purple container
-    onPrimaryContainer = VibrantPurple.copy(alpha = 0.8f), // Darker purple text
-    secondary = SkyBlue,               // Secondary accent
-    onSecondary = DeepNavy,            // Dark text on light blue
-    secondaryContainer = SkyBlue.copy(alpha = 0.15f), // Light blue container
-    onSecondaryContainer = Color(0xFF005A80), // Darker blue text
-    tertiary = VibrantPink,            // Tertiary accent
-    onTertiary = Color.White,          // White text on pink
-    tertiaryContainer = VibrantPink.copy(alpha = 0.15f), // Light pink container
-    onTertiaryContainer = Color(0xFF9A0036), // Darker pink text
-    background = BackgroundLight,      // SoftIvory
-    onBackground = TextColorLight,     // DeepNavy on SoftIvory
-    surface = SurfaceLight,            // NearWhite
-    onSurface = TextColorLight,        // DeepNavy on NearWhite
-    surfaceVariant = SubtleGrayLight.copy(alpha = 0.2f), // Very subtle gray for cards
-    onSurfaceVariant = TextColorLight.copy(alpha = 0.7f), // Slightly faded dark text
+    primary = VibrantPurple,
+    onPrimary = Color.White,
+    primaryContainer = VibrantPurple.copy(alpha = 0.15f),
+    onPrimaryContainer = VibrantPurple.copy(alpha = 0.8f),
+    secondary = SkyBlue,
+    onSecondary = DeepNavy,
+    secondaryContainer = SkyBlue.copy(alpha = 0.15f),
+    onSecondaryContainer = Color(0xFF005A80),
+    tertiary = VibrantPink,
+    onTertiary = Color.White,
+    tertiaryContainer = VibrantPink.copy(alpha = 0.15f),
+    onTertiaryContainer = Color(0xFF9A0036),
+    background = BackgroundLight,
+    onBackground = TextColorLight,
+    surface = SurfaceLight,
+    onSurface = TextColorLight,
+    surfaceVariant = SubtleGrayLight.copy(alpha = 0.2f),
+    onSurfaceVariant = TextColorLight.copy(alpha = 0.7f),
     error = ErrorRed,
     onError = Color.White,
     errorContainer = ErrorRed.copy(alpha = 0.1f),
     onErrorContainer = ErrorRed.copy(alpha = 0.9f),
-    outline = OutlineLight,            // Subtle light gray outline
-    outlineVariant = OutlineLight.copy(alpha = 0.6f) // Slightly stronger outline variant
+    outline = OutlineLight,
+    outlineVariant = OutlineLight.copy(alpha = 0.6f),
+    inverseSurface = SurfaceDark,
+    inverseOnSurface = TextColorDark
 )
 
 @Composable
+fun lightAppBackgroundGradient(): Brush {
+    val primary = MaterialTheme.colorScheme.primary
+    val secondary = MaterialTheme.colorScheme.secondary
+    val background = MaterialTheme.colorScheme.background
+    val surface = MaterialTheme.colorScheme.surface
+    val surfaceVariant = MaterialTheme.colorScheme.surfaceVariant
+
+    return Brush.verticalGradient(
+        colors = listOf(
+             primary.copy(alpha = 0.4f),
+             secondary.copy(alpha = 0.3f),
+             surfaceVariant.copy(alpha = 0.6f),
+             background.copy(alpha = 0.9f)
+        ),
+        startY = 0f,
+    )
+}
+
+@Composable
+fun darkAppBackgroundGradient(): Brush {
+    val primary = MaterialTheme.colorScheme.primary
+    val secondary = MaterialTheme.colorScheme.secondary
+    val surface = MaterialTheme.colorScheme.surface
+    val background = MaterialTheme.colorScheme.background
+
+    return Brush.verticalGradient(
+        colors = listOf(
+            primary.copy(alpha = 0.25f),
+            secondary.copy(alpha = 0.15f),
+            surface.copy(alpha = 0.4f),
+            background
+        )
+    )
+}
+
+@Composable
 fun QuizAppTheme(
-    darkTheme: Boolean = isSystemInDarkTheme(),
-    dynamicColor: Boolean = false, // Dynamic color still optional
+    themePreference: ThemePreference = ThemePreference.SYSTEM,
+    dynamicColor: Boolean = false,
     content: @Composable () -> Unit
 ) {
+    val darkTheme = when (themePreference) {
+        ThemePreference.LIGHT -> false
+        ThemePreference.DARK -> true
+        ThemePreference.SYSTEM -> isSystemInDarkTheme()
+    }
+
     val colorScheme = when {
         dynamicColor && Build.VERSION.SDK_INT >= Build.VERSION_CODES.S -> {
             val context = LocalContext.current
@@ -87,10 +133,8 @@ fun QuizAppTheme(
     if (!view.isInEditMode) {
         SideEffect {
             val window = (view.context as Activity).window
-            // Status bar matches background, use dark icons on light bg and vice-versa
             window.statusBarColor = colorScheme.background.toArgb()
             WindowCompat.getInsetsController(window, view).isAppearanceLightStatusBars = !darkTheme
-            // Navigation bar also matches background
             window.navigationBarColor = colorScheme.background.toArgb()
             WindowCompat.getInsetsController(window, view).isAppearanceLightNavigationBars = !darkTheme
         }
@@ -98,8 +142,8 @@ fun QuizAppTheme(
 
     MaterialTheme(
         colorScheme = colorScheme,
-        typography = Typography, // Assuming Typography.kt is defined
-        shapes = Shapes,       // Assuming Shapes.kt is defined
+        typography = Typography,
+        shapes = Shapes,
         content = content
     )
 }

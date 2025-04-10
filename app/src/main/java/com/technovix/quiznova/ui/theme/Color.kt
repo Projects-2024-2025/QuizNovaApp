@@ -1,85 +1,75 @@
 package com.technovix.quiznova.ui.theme
 
 import androidx.compose.ui.graphics.Color
-
-// --- Core Vibrant Palette ---
-val VibrantPurple = Color(0xFF703ACF) // Blue Iris - Primary candidate
-val DeepNavy = Color(0xFF050A30)       // Dark Blue - Good for dark backgrounds/text
-val BrightBlue = Color(0xFF0A84FF)     // Keeping a vibrant blue option (was PrimaryBlue)
-val SkyBlue = Color(0xFF7EC8E3)        // Baby Blue - Secondary candidate
-val VibrantPink = Color(0xFFE91E63)      // Tertiary / Accent
-val SoftIvory = Color(0xFFFFF2FF)      // Light background/surface
-val NearWhite = Color(0xFFFAFAFF)     // Slightly cooler white for surface
-
-// --- Status & Feedback Colors ---
-val SuccessGreen = Color(0xFF2ECC71)    // Emerald Green - More vibrant success
-val ErrorRed = Color(0xFFFF453A)        // iOS Red - Keep vibrant error
-val WarningOrange = Color(0xFFFF9F0A)   // iOS Orange - Good for warnings or tertiary
-val HighlightYellow = Color(0xFFFFD60A) // iOS Gold/Yellow - For achievements
-
-// --- Neutral Shades (Derived) ---
-// Light Theme Neutrals
-val TextColorLight = DeepNavy           // Dark text on light background
-val SubtleGrayLight = Color(0xFFB0B8D4) // Lighter gray derived from blue tones
-val OutlineLight = SubtleGrayLight.copy(alpha = 0.4f)
-val TrackLight = SubtleGrayLight.copy(alpha = 0.2f)
-
-// Dark Theme Neutrals
-val TextColorDark = SoftIvory           // Light text on dark background
-val SubtleGrayDark = Color(0xFF8A94BC)  // Mid-tone gray derived from blue/purple
-val OutlineDark = SubtleGrayDark.copy(alpha = 0.3f)
-val TrackDark = SubtleGrayDark.copy(alpha = 0.2f)
-
-// --- Backgrounds/Surfaces ---
-// Light Theme
-val BackgroundLight = SoftIvory
-val SurfaceLight = NearWhite
-
-// Dark Theme
-val BackgroundDark = DeepNavy // Use the deep navy instead of black
-val SurfaceDark = Color(0xFF101848) // Slightly lighter navy/purple for cards/sheets
-
-// --- OLD COLORS (Can be removed if no longer referenced elsewhere) ---
-/*
 val Purple80 = Color(0xFFD0BCFF)
 val PurpleGrey80 = Color(0xFFCCC2DC)
 val Pink80 = Color(0xFFEFB8C8)
+
 val Purple40 = Color(0xFF6650a4)
 val PurpleGrey40 = Color(0xFF625b71)
 val Pink40 = Color(0xFF7D5260)
-val PrimaryBlue = Color(0xFF0A84FF)
-val PrimaryVariantBlue = Color(0xFF005ecb)
-val SecondaryGreen = Color(0xFF30D158)
-val SecondaryVariantGreen = Color(0xFF249a41)
-val TertiaryOrange = Color(0xFFFF9F0A)
-val BackgroundLightOld = Color(0xFFF8F9FA)
-val SurfaceLightOld = Color.White
-val OnBackgroundLightOld = Color(0xFF1C1C1E)
-val OnSurfaceLightOld = Color(0xFF1C1C1E)
-val BackgroundDarkOld = Color(0xFF000000)
-val SurfaceDarkOld = Color(0xFF1C1C1E)
-val OnBackgroundDarkOld = Color(0xFFEBEBF5)
-val OnSurfaceDarkOld = Color(0xFFEBEBF5)
-val CorrectGreenOld = SecondaryGreen
-val WrongRedOld = Color(0xFFFF453A)
-val NeutralGrayOld = Color(0xFF8A8A8E)
-val GoldYellowOld = Color(0xFFFFD60A)
-val OutlineGrayOld = NeutralGrayOld.copy(alpha = 0.3f)
-val TrackColorOld = NeutralGrayOld.copy(alpha = 0.2f)
-*/
 
-// --- New Vibrant Lists for Categories ---
-// Use Primary, Secondary, Tertiary (or other defined vibrant colors)
-val vibrantCardColors = listOf(
-    VibrantPurple.copy(alpha = 0.18f), // Slightly more presence
-    SkyBlue.copy(alpha = 0.20f),
-    VibrantPink.copy(alpha = 0.18f),
-    BrightBlue.copy(alpha = 0.18f) // Added another option
-)
+// Quiz için özel renkler (Burada tanımlamak daha merkezi olur)
+val SuccessGreen = Color(0xFF4CAF50) // Başarı rengi
+val ErrorRed = Color(0xFFF44336)     // Hata/Yanlış rengi
+val HighlightYellow = Color(0xFFFFC107) // Vurgu/Mükemmel rengi
 
+// Gradientler için renkler (Zaten muhtemelen burada veya Theme.kt'dedir)
+val LightStart = Color(0xFFE1F5FE) // Açık tema başlangıç
+val LightEnd = Color(0xFFB3E5FC) // Açık tema bitiş
+val DarkStart = Color(0xFF0D1B2A) // Koyu tema başlangıç
+val DarkEnd = Color(0xFF1B263B) // Koyu tema bitiş
+// --- Yeni Çekirdek Canlı Palet ---
+val VibrantPurple = Color(0xFF703ACF) // Ana renk adayı (Mavi İris gibi)
+val DeepNavy = Color(0xFF050A30)       // Koyu Lacivert - Koyu tema arka planları/metinler için iyi
+val BrightBlue = Color(0xFF0A84FF)     // Canlı mavi seçeneği (eski PrimaryBlue)
+val SkyBlue = Color(0xFF7EC8E3)        // Bebek Mavisi - İkincil renk adayı
+val VibrantPink = Color(0xFFE91E63)      // Üçüncül / Vurgu rengi
+val SoftIvory = Color(0xFFFFF2FF)      // Açık tema arka planı/yüzeyi (Hafif mor tonlu)
+val NearWhite = Color(0xFFFAFAFF)      // Yüzey için biraz daha soğuk beyaz
+
+
+// --- Nötr Tonlar (Türetilmiş) ---
+// Açık Tema Nötrleri
+val TextColorLight = DeepNavy           // Açık arka planda koyu metin
+val SubtleGrayLight = Color(0xFFB0B8D4) // Mavi tonlarından türetilmiş daha açık gri
+val OutlineLight = SubtleGrayLight.copy(alpha = 0.4f)
+val TrackLight = SubtleGrayLight.copy(alpha = 0.2f)
+
+// Koyu Tema Nötrleri
+val TextColorDark = SoftIvory           // Koyu arka planda açık metin
+val SubtleGrayDark = Color(0xFF8A94BC)  // Mavi/mor tonlarından türetilmiş orta ton gri
+val OutlineDark = SubtleGrayDark.copy(alpha = 0.3f)
+val TrackDark = SubtleGrayDark.copy(alpha = 0.2f)
+
+// --- Arka Planlar/Yüzeyler ---
+// Açık Tema
+val BackgroundLight = SoftIvory
+val SurfaceLight = NearWhite
+
+// Koyu Tema
+val BackgroundDark = DeepNavy // Siyah yerine koyu lacivert
+val SurfaceDark = Color(0xFF101848) // Kartlar/sayfalar için biraz daha açık lacivert/mor
+
+// --- Kategori Kartları/İkonları İçin Canlı Renk Listesi ---
+// Bu liste çeşitlilik sağlamak için iyidir. Renklerin kendisi canlı ve uyumlu olmalı.
 val vibrantIconColors = listOf(
-    VibrantPurple,
-    SkyBlue,
-    VibrantPink,
-    BrightBlue // Match the card colors
+    Color(0xFFF44336), // Kırmızı
+    Color(0xFFE91E63), // Pembe
+    Color(0xFF9C27B0), // Mor
+    Color(0xFF673AB7), // Koyu Mor
+    Color(0xFF3F51B5), // İndigo
+    Color(0xFF2196F3), // Mavi
+    Color(0xFF03A9F4), // Açık Mavi
+    Color(0xFF00BCD4), // Camgöbeği
+    Color(0xFF009688), // Teal
+    Color(0xFF4CAF50), // Yeşil
+    Color(0xFF8BC34A), // Açık Yeşil
+    Color(0xFFCDDC39), // Lime
+    Color(0xFFFFEB3B), // Sarı
+    Color(0xFFFFC107), // Amber
+    Color(0xFFFF9800), // Turuncu
+    Color(0xFF795548), // Kahverengi
+    Color(0xFF607D8B)  // Mavi Gri
 )
+
