@@ -1,0 +1,24 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+
+    <!-- CategoryGridItem için Boyutlar -->
+    <dimen name="card_grid_padding">12dp</dimen>             <!-- Kartın iç kenar boşluğu -->
+    <dimen name="card_grid_icon_background_size">64dp</dimen> <!-- İkonun arkasındaki dairenin boyutu -->
+    <dimen name="card_grid_icon_size">36dp</dimen>           <!-- İkonun kendi boyutu -->
+    <dimen name="card_grid_spacer_height">8dp</dimen>         <!-- İkon ve metin arasındaki dikey boşluk -->
+
+    <!-- CategoryPageItem için Örnek Boyutlar (Eğer kullanmak istersen) -->
+    <dimen name="card_page_padding">32dp</dimen>
+    <dimen name="card_page_icon_background_size">96dp</dimen>
+    <dimen name="card_page_icon_size">56dp</dimen>
+    <dimen name="card_page_spacer_height">24dp</dimen>
+
+    <!-- Genel Kullanım Örnekleri (İsteğe bağlı) -->
+    <dimen name="padding_small">4dp</dimen>
+    <dimen name="padding_medium">8dp</dimen>
+    <dimen name="padding_large">16dp</dimen>
+    <dimen name="corner_radius_medium">8dp</dimen>
+    <dimen name="text_size_body">14sp</dimen>
+    <dimen name="text_size_title">16sp</dimen>
+
+</resources>

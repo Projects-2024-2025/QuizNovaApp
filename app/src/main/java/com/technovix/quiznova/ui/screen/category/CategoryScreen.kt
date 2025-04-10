@@ -26,11 +26,13 @@ import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.navigation.NavController
 import com.technovix.quiznova.R
 import com.technovix.quiznova.data.local.entity.CategoryEntity
-import com.technovix.quiznova.ui.components.CategoryCarousel
-import com.technovix.quiznova.ui.components.CategoryGridStaggered
+// --- Component importları güncellendi ---
+import com.technovix.quiznova.ui.components.CategoryCarousel // veya kendi component paketiniz
+import com.technovix.quiznova.ui.components.CategoryGridRegular // <<<--- CategoryGridStaggered yerine
 import com.technovix.quiznova.ui.components.EmptyStateView
 import com.technovix.quiznova.ui.components.ErrorView
 import com.technovix.quiznova.ui.components.LoadingAnimation
+// --- Diğer importlar ---
 import com.technovix.quiznova.ui.navigation.Screen
 import com.technovix.quiznova.util.ThemePreference
 import com.technovix.quiznova.ui.theme.*
@@ -48,7 +50,7 @@ fun CategoryScreen(
     var showMenu by remember { mutableStateOf(false) }
     val context = LocalContext.current
     val privacyPolicyUrl = stringResource(R.string.url_privacy_policy)
-    var isGridViewVisible by remember { mutableStateOf(true) }
+    var isGridViewVisible by remember { mutableStateOf(true) } // Grid ile başla
     val zoomOutThreshold = 0.85f
     val zoomInThreshold = 1.15f
 
@@ -65,7 +67,6 @@ fun CategoryScreen(
             navController.navigate(route)
         } catch (e: Exception) {
             Log.e("CategoryNavigation", "Navigasyon başarısız: Rota='${route}'", e)
-            // Kullanıcıya bir hata mesajı gösterilebilir (Snackbar vb.)
         }
     }
 
@@ -87,14 +88,11 @@ fun CategoryScreen(
                     actionIconContentColor = MaterialTheme.colorScheme.onBackground
                 ),
                 actions = {
-                    // Grid/Carousel Değiştirme Butonu
                     val actionIcon = if (isGridViewVisible) Icons.Default.ViewCarousel else Icons.Default.GridView
                     val actionDescResId = if (isGridViewVisible) R.string.cd_show_carousel else R.string.cd_show_grid
                     IconButton(onClick = { isGridViewVisible = !isGridViewVisible }) {
                         Icon(actionIcon, contentDescription = stringResource(actionDescResId))
                     }
-
-                    // Diğer Seçenekler Menüsü Butonu
                     Box {
                         IconButton(onClick = { showMenu = !showMenu }) {
                             Icon(Icons.Default.MoreVert, contentDescription = stringResource(R.string.cd_more_options))
@@ -149,18 +147,17 @@ fun CategoryScreen(
                             if (isGridViewVisible) {
                                 if (zoom > zoomInThreshold) { isGridViewVisible = false }
                             } else {
-                                // Sadece Carousel görünümündeyken zoom out ile Grid'e geç
                                 if (zoom < zoomOutThreshold) { isGridViewVisible = true }
                             }
                         }
                     }
             ) {
                 when (categoriesState) {
-                    is Resource.Loading -> LoadingAnimation(modifier = Modifier.align(Alignment.Center)) // Component çağrısı
+                    is Resource.Loading -> LoadingAnimation(modifier = Modifier.align(Alignment.Center))
                     is Resource.Success -> {
                         val categories = (categoriesState as Resource.Success<List<CategoryEntity>>).data
                         if (categories.isNullOrEmpty()) {
-                            EmptyStateView(modifier = Modifier.align(Alignment.Center).padding(32.dp)) // Component çağrısı
+                            EmptyStateView(modifier = Modifier.align(Alignment.Center)) // Padding'i component içine taşıdık
                         } else {
                             AnimatedContent(
                                 targetState = isGridViewVisible,
@@ -172,21 +169,22 @@ fun CategoryScreen(
                                 }
                             ) { showGrid ->
                                 if (showGrid) {
-                                    CategoryGridStaggered( // Component çağrısı
+                                    // --- DEĞİŞİKLİK: Doğru grid fonksiyonu çağrılıyor ---
+                                    CategoryGridRegular( // <<<--- CategoryGridStaggered yerine
                                         categories = categories,
-                                        onItemClick = { category -> navigateToQuizLocal(category) } // Lambda ile geçiş
+                                        onItemClick = { category -> navigateToQuizLocal(category) }
                                     )
                                 } else {
-                                    CategoryCarousel( // Component çağrısı
+                                    CategoryCarousel(
                                         categories = categories,
-                                        onCategorySelect = { category -> navigateToQuizLocal(category) } // Lambda ile geçiş
+                                        onCategorySelect = { category -> navigateToQuizLocal(category) }
                                     )
                                 }
                             }
                         }
                     }
-                    is Resource.Error -> ErrorView( // Component çağrısı
-                        modifier = Modifier.align(Alignment.Center).padding(32.dp),
+                    is Resource.Error -> ErrorView(
+                        modifier = Modifier.align(Alignment.Center), // Padding'i component içine taşıdık
                         message = (categoriesState as Resource.Error<List<CategoryEntity>>).message ?: stringResource(R.string.error_unknown),
                         onRetry = { viewModel.refreshCategories() }
                     )

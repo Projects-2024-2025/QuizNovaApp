@@ -1,4 +1,4 @@
-package com.technovix.quiznova.ui.components
+package com.technovix.quiznova.ui.components // veya ui.screen.category.components
 
 import androidx.annotation.StringRes
 import androidx.compose.animation.*
@@ -7,10 +7,9 @@ import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
-import androidx.compose.foundation.lazy.staggeredgrid.LazyVerticalStaggeredGrid
-import androidx.compose.foundation.lazy.staggeredgrid.StaggeredGridCells
-import androidx.compose.foundation.lazy.staggeredgrid.itemsIndexed as staggeredItemsIndexed
-import androidx.compose.foundation.lazy.staggeredgrid.rememberLazyStaggeredGridState
+import androidx.compose.foundation.lazy.grid.GridCells // Düzenli Grid için
+import androidx.compose.foundation.lazy.grid.LazyVerticalGrid // Düzenli Grid için
+import androidx.compose.foundation.lazy.grid.itemsIndexed // Düzenli Grid için
 import androidx.compose.foundation.pager.HorizontalPager
 import androidx.compose.foundation.pager.PagerState
 import androidx.compose.foundation.pager.rememberPagerState
@@ -27,6 +26,7 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.Shape
 import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.graphics.vector.ImageVector
+import androidx.compose.ui.res.dimensionResource // Boyut kaynakları için
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
@@ -36,10 +36,11 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.compose.ui.util.lerp
 import com.airbnb.lottie.compose.*
-import com.technovix.quiznova.R
+import com.technovix.quiznova.R // Kendi R dosyanızın importu
 import com.technovix.quiznova.data.local.entity.CategoryEntity
-import com.technovix.quiznova.ui.theme.* // Kendi tema importların
+import com.technovix.quiznova.ui.theme.* // Kendi tema importlarınız
 import kotlin.math.absoluteValue
+
 
 // Tema seçimi menü elemanı için yardımcı Composable
 @Composable
@@ -59,20 +60,20 @@ fun ThemeMenuItem(
                     tint = MaterialTheme.colorScheme.primary
                 )
             } else {
-                // Seçili değilse ikon alanı kadar boşluk bırakarak hizayı koru
                 Spacer(modifier = Modifier.size(24.dp))
             }
         }
     )
 }
 
+// Yükleme animasyonu
 @Composable
 fun LoadingAnimation(modifier: Modifier = Modifier) {
     val composition by rememberLottieComposition(LottieCompositionSpec.RawRes(R.raw.lottie_loading))
     Column(
         horizontalAlignment = Alignment.CenterHorizontally,
         verticalArrangement = Arrangement.Center,
-        modifier = modifier.padding(16.dp).fillMaxSize() // Tüm alanı kapla ve padding uygula
+        modifier = modifier.padding(16.dp).fillMaxSize()
     ) {
         LottieAnimation(
             composition = composition,
@@ -88,7 +89,7 @@ fun LoadingAnimation(modifier: Modifier = Modifier) {
     }
 }
 
-
+// Kategori Carousel Görünümü (Üstü Boş)
 @OptIn(ExperimentalFoundationApi::class)
 @Composable
 fun CategoryCarousel(
@@ -97,114 +98,83 @@ fun CategoryCarousel(
     modifier: Modifier = Modifier
 ) {
     val pagerState = rememberPagerState(pageCount = { categories.size })
-    // Seçili kategoriyi animasyonlu geçiş için state'de tutalım
     val currentCategory by remember { derivedStateOf { categories.getOrNull(pagerState.currentPage) } }
 
     Column(
         modifier = modifier.fillMaxSize(),
         horizontalAlignment = Alignment.CenterHorizontally
     ) {
-        Spacer(modifier = Modifier.height(24.dp)) // Başlık için biraz daha boşluk
-
-        // Kategori başlığı için animasyonlu geçiş
-        AnimatedContent(
-            targetState = currentCategory?.name ?: "",
-            label = "CarouselTitleAnim",
-            transitionSpec = {
-                // Yukarı/aşağı kayma efekti
-                (slideInVertically { height -> height / 4 } + fadeIn(tween(300, 50))) togetherWith
-                        (slideOutVertically { height -> -height / 4 } + fadeOut(tween(250))) using
-                        SizeTransform(clip = false)
-            }
-        ) { title ->
-            Text(
-                text = title,
-                style = MaterialTheme.typography.headlineSmall, // Biraz daha büyük başlık
-                fontWeight = FontWeight.Bold,
-                textAlign = TextAlign.Center,
-                modifier = Modifier
-                    .padding(horizontal = 32.dp)
-                    .heightIn(min = 56.dp), // İki satır için yeterli yükseklik
-                maxLines = 2,
-                overflow = TextOverflow.Ellipsis,
-                color = MaterialTheme.colorScheme.onBackground // Tema rengi
-            )
-        }
-        Spacer(modifier = Modifier.height(20.dp))
+        Spacer(modifier = Modifier.height(20.dp)) // Pager'dan önceki boşluk.
 
         HorizontalPager(
             state = pagerState,
             modifier = Modifier
                 .fillMaxWidth()
-                .weight(1f), // Alanın çoğunu kaplasın
-            contentPadding = PaddingValues(horizontal = 56.dp), // Kenarlarda daha fazla boşluk
+                .weight(1f),
+            contentPadding = PaddingValues(horizontal = 56.dp),
             pageSpacing = 16.dp
         ) { pageIndex ->
             categories.getOrNull(pageIndex)?.let { category ->
                 val icon = getIconForCategory(category.name)
-                // Renkleri doğrudan listeden alıyoruz
                 val accentColor = vibrantIconColors[pageIndex % vibrantIconColors.size]
 
-                CategoryPageItem(
+                CategoryPageItem( // Carousel içindeki kart (kısaltılmış metin içeriyor)
                     category = category,
                     icon = icon,
                     accentColor = accentColor,
                     modifier = Modifier
-                        // Pager geçiş animasyonu (ölçek ve alfa)
                         .graphicsLayer {
                             val pageOffset = ((pagerState.currentPage - pageIndex) + pagerState.currentPageOffsetFraction).absoluteValue
-                            // Daha belirgin ölçekleme ve alfa efekti
                             val scale = lerp(start = 0.80f, stop = 1f, fraction = 1f - pageOffset.coerceIn(0f, 1f))
                             scaleX = scale
                             scaleY = scale
                             alpha = lerp(start = 0.4f, stop = 1f, fraction = 1f - pageOffset.coerceIn(0f, 1f))
                         }
-                        .clip(MaterialTheme.shapes.extraLarge) // Yeni eklenen şekil
+                        .clip(MaterialTheme.shapes.extraLarge)
                 )
-            } ?: Spacer(Modifier.fillMaxSize(0.8f)) // Boş sayfa durumunda yer tutucu
+            } ?: Spacer(Modifier.fillMaxSize(0.8f))
         }
 
-        // İndikatör
         HorizontalPagerIndicator(
             pagerState = pagerState,
-            modifier = Modifier.padding(vertical = 24.dp), // Daha fazla dikey boşluk
+            modifier = Modifier.padding(vertical = 24.dp),
             activeColor = MaterialTheme.colorScheme.primary,
             inactiveColor = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.3f),
             indicatorWidth = 8.dp,
             indicatorHeight = 8.dp,
             spacing = 8.dp,
             indicatorShape = CircleShape,
-            activeIndicatorWidthMultiplier = 2.5f // Aktif olan daha belirgin olsun
+            activeIndicatorWidthMultiplier = 2.5f
         )
 
-        // Başlat Butonu
         val buttonEnabled = currentCategory != null
         Button(
             onClick = { currentCategory?.let { onCategorySelect(it) } },
             enabled = buttonEnabled,
             modifier = Modifier
-                .fillMaxWidth(0.75f) // Biraz daha geniş buton
-                .padding(bottom = 48.dp, top = 16.dp) // Alt boşluk artırıldı
-                .height(56.dp), // Standart buton yüksekliği
-            shape = MaterialTheme.shapes.medium, // Tema şekli
+                .fillMaxWidth(0.75f)
+                .padding(bottom = 48.dp, top = 16.dp)
+                .height(56.dp),
+            shape = MaterialTheme.shapes.medium,
             elevation = ButtonDefaults.buttonElevation(
-                defaultElevation = if (buttonEnabled) 6.dp else 0.dp, // Daha belirgin gölge
+                defaultElevation = if (buttonEnabled) 6.dp else 0.dp,
                 pressedElevation = 2.dp,
                 disabledElevation = 0.dp
             ),
             colors = ButtonDefaults.buttonColors(
-                containerColor = MaterialTheme.colorScheme.primary, // Tema rengi
-                contentColor = MaterialTheme.colorScheme.onPrimary // Tema rengi
+                containerColor = MaterialTheme.colorScheme.primary,
+                contentColor = MaterialTheme.colorScheme.onPrimary
             )
         ) {
-            // Buton metni için animasyon
             AnimatedContent(
                 targetState = currentCategory?.name ?: "",
                 label = "ButtonTextAnim",
                 transitionSpec = { fadeIn(tween(200)) togetherWith fadeOut(tween(200)) }
             ) { name ->
+                // Buton metni için de kısaltılmış ismi kullanabiliriz (isteğe bağlı)
+                val displayName = name.substringAfterLast(':', name).trim()
                 Text(
-                    text = if (name.isNotEmpty()) stringResource(R.string.start_quiz_button_short, name) // Daha kısa metin
+                    text = if (displayName.isNotEmpty()) stringResource(R.string.start_quiz_button_short, displayName)
                     else stringResource(R.string.select_category_button),
                     fontWeight = FontWeight.Bold,
                     fontSize = 16.sp,
@@ -216,131 +186,68 @@ fun CategoryCarousel(
     }
 }
 
-
-@OptIn(ExperimentalFoundationApi::class)
+// Kategori Düzenli Grid Görünümü (AspectRatio ile)
 @Composable
-fun CategoryGridStaggered(
+fun CategoryGridRegular(
     categories: List<CategoryEntity>,
     onItemClick: (CategoryEntity) -> Unit,
     modifier: Modifier = Modifier
 ) {
-    LazyVerticalStaggeredGrid(
-        columns = StaggeredGridCells.Fixed(2), // 2 sütunlu yapı
+    LazyVerticalGrid(
+        columns = GridCells.Fixed(2), // Sütun sayısı
         modifier = modifier.fillMaxSize(),
-        contentPadding = PaddingValues(16.dp), // Kenarlarda eşit boşluk
-        horizontalArrangement = Arrangement.spacedBy(16.dp), // Öğeler arası yatay boşluk
-        verticalItemSpacing = 16.dp, // Öğeler arası dikey boşluk
-        state = rememberLazyStaggeredGridState() // Kaydırma pozisyonunu hatırlar
+        contentPadding = PaddingValues(16.dp),
+        horizontalArrangement = Arrangement.spacedBy(16.dp), // Yatay boşluk
+        verticalArrangement = Arrangement.spacedBy(16.dp)   // Dikey boşluk
     ) {
-        staggeredItemsIndexed(
+        itemsIndexed(
             items = categories,
-            key = { _, category -> category.id } // Performans için anahtar
+            key = { _, category -> category.id }
         ) { index, category ->
             val accentColor = vibrantIconColors[index % vibrantIconColors.size]
             val icon = getIconForCategory(category.name)
 
-            CategoryCardStaggered(
+            // Grid içindeki her bir kart (Kare görünüm ve kısaltılmış metin)
+            CategoryGridItem(
                 category = category,
                 icon = icon,
                 accentColor = accentColor,
-                onClick = { onItemClick(category) }
-                // Modifier'ı burada tekrar vermeye gerek yok, zaten Card içinde kullanılıyor
+                onClick = { onItemClick(category) },
+                modifier = Modifier.aspectRatio(1f) // Kare oranını uygula
             )
         }
     }
 }
 
+// Grid İçindeki Kategori Kartı (AspectRatio ve Kısaltılmış Metin ile)
 @Composable
-fun CategoryPageItem(
-    category: CategoryEntity,
-    icon: ImageVector,
-    accentColor: Color,
-    modifier: Modifier = Modifier
-) {
-    Card(
-        modifier = modifier.fillMaxHeight(0.95f), // Biraz daha yüksek
-        shape = MaterialTheme.shapes.extraLarge, // Daha yuvarlak köşeler
-        elevation = CardDefaults.cardElevation(defaultElevation = 10.dp), // Daha belirgin gölge
-        colors = CardDefaults.cardColors(containerColor = Color.Transparent) // Arka planı Box'ta yöneteceğiz
-    ) {
-        Box(
-            modifier = Modifier
-                .fillMaxSize()
-                // Canlı ve modern gradient arka plan
-                .background(
-                    brush = Brush.verticalGradient(
-                        colors = listOf(
-                            accentColor.copy(alpha = 0.8f), // Üstte daha baskın renk
-                            MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.6f), // Ortada geçiş
-                            accentColor.copy(alpha = 0.5f)  // Altta tekrar hafif renk
-                        )
-                    )
-                )
-        ) {
-            Column(
-                modifier = Modifier
-                    .fillMaxSize()
-                    .padding(32.dp), // İç boşluk artırıldı
-                horizontalAlignment = Alignment.CenterHorizontally,
-                verticalArrangement = Arrangement.Center // İçerik ortalansın
-            ) {
-                // İkon için arka planı olan daire
-                Box(
-                    modifier = Modifier
-                        .size(96.dp) // Daha büyük ikon alanı
-                        .clip(CircleShape)
-                        .background(MaterialTheme.colorScheme.surface.copy(alpha = 0.5f)), // Hafif şeffaf yüzey rengi
-                    contentAlignment = Alignment.Center
-                ) {
-                    Icon(
-                        imageVector = icon,
-                        contentDescription = null, // Dekoratif ikon
-                        modifier = Modifier.size(56.dp), // İkon boyutu da büyüdü
-                        tint = accentColor // Ana renk ile aynı
-                    )
-                }
-                Spacer(modifier = Modifier.height(24.dp))
-                Text(
-                    text = category.name,
-                    style = MaterialTheme.typography.headlineMedium, // Daha büyük ve kalın başlık
-                    fontWeight = FontWeight.ExtraBold,
-                    color = MaterialTheme.colorScheme.onSurface, // Yüzey rengi üzerinde daha iyi okunur
-                    textAlign = TextAlign.Center,
-                    modifier = Modifier.padding(horizontal = 8.dp),
-                    maxLines = 3, // Gerekirse 3 satıra kadar
-                    overflow = TextOverflow.Ellipsis
-                )
-            }
-        }
-    }
-}
-
-@Composable
-fun CategoryCardStaggered(
-    modifier: Modifier = Modifier, // Dışarıdan modifier alabilir
+fun CategoryGridItem(
+    modifier: Modifier = Modifier, // Dışarıdan gelen modifier'ı (aspectRatio içeren) alacak
     category: CategoryEntity,
     icon: ImageVector,
     accentColor: Color,
     onClick: () -> Unit
 ) {
+    // ÖNEMLİ NOT: Aşağıdaki dimensionResource() kullanımları için
+    // projenizde res/values/dimens.xml dosyasında ilgili boyutları tanımlamanız gerekir.
+    // Örnek: <dimen name="card_grid_padding">12dp</dimen>
+    // Eğer tanımlamak istemiyorsanız, doğrudan .dp değerlerini kullanın (örn: .padding(12.dp)).
+
     Card(
         onClick = onClick,
-        modifier = modifier.fillMaxWidth(), // Genişliği doldur
-        shape = MaterialTheme.shapes.large, // Yuvarlak köşeler (16dp)
+        modifier = modifier.fillMaxWidth(), // AspectRatio modifier'ı dışarıdan uygulanacak
+        shape = MaterialTheme.shapes.large,
         colors = CardDefaults.cardColors(
-            // Yüzey rengini hafif yükseklikle kullanmak daha iyi bir görünüm sağlar
             containerColor = MaterialTheme.colorScheme.surfaceColorAtElevation(3.dp)
         ),
         elevation = CardDefaults.cardElevation(
-            defaultElevation = 4.dp, // Hafif gölge
-            pressedElevation = 8.dp  // Tıklanınca artan gölge
+            defaultElevation = 4.dp,
+            pressedElevation = 8.dp
         ),
-        // Kenarlık rengini accentColor'dan türetelim
         border = BorderStroke(1.dp, accentColor.copy(alpha = 0.5f))
     ) {
-        // Çok hafif bir gradient efekti (isteğe bağlı)
         Box(modifier = Modifier
-            .fillMaxSize()
+            .fillMaxSize() // Oranla belirlenen alana yayıl
             .background(
                 brush = Brush.verticalGradient(
                     colors = listOf(
@@ -353,43 +260,110 @@ fun CategoryCardStaggered(
         ){
             Column(
                 modifier = Modifier
-                    .fillMaxWidth()
-                    .padding(vertical = 20.dp, horizontal = 16.dp), // Dikey boşluk artırıldı
+                    .fillMaxSize()
+                    .padding(dimensionResource(id = R.dimen.card_grid_padding)), // İç padding
+                // veya .padding(12.dp)
                 horizontalAlignment = Alignment.CenterHorizontally,
+                verticalArrangement = Arrangement.Center // İçeriği dikeyde ortala
             ) {
-                // İkon arka planı
                 Box(
                     modifier = Modifier
-                        .size(80.dp) // Daha büyük ikon alanı
+                        .size(dimensionResource(id = R.dimen.card_grid_icon_background_size)) // İkon arka plan boyutu
+                        // veya .size(64.dp)
                         .clip(CircleShape)
-                        .background(accentColor.copy(alpha = 0.15f)), // Daha belirgin ama yine de hafif
+                        .background(accentColor.copy(alpha = 0.15f)),
                     contentAlignment = Alignment.Center
                 ) {
                     Icon(
                         imageVector = icon,
-                        contentDescription = category.name, // Erişilebilirlik için
-                        modifier = Modifier.size(44.dp), // İkon da büyüdü
-                        tint = accentColor // Ana renk
+                        contentDescription = category.name, // Orijinal isim kalsın
+                        modifier = Modifier.size(dimensionResource(id = R.dimen.card_grid_icon_size)), // İkon boyutu
+                        // veya .size(36.dp)
+                        tint = accentColor
                     )
                 }
-                Spacer(modifier = Modifier.height(16.dp))
+                Spacer(modifier = Modifier.height(dimensionResource(id = R.dimen.card_grid_spacer_height))) // İkon ve metin arası boşluk
+                // veya .height(8.dp)
                 Text(
-                    text = category.name,
-                    style = MaterialTheme.typography.titleMedium, // Kartlar için uygun başlık stili
+                    text = category.name.substringAfterLast(':', category.name).trim(), // Kısaltılmış metin
+                    style = MaterialTheme.typography.titleMedium, // Stil ayarlanabilir
                     fontWeight = FontWeight.Bold,
                     textAlign = TextAlign.Center,
-                    maxLines = 3, // Uzun isimler için
+                    maxLines = 2, // Kare kart için 2 satır genellikle yeterli
                     overflow = TextOverflow.Ellipsis,
-                    color = MaterialTheme.colorScheme.onSurface // Yüzeydeki metin rengi
+                    color = MaterialTheme.colorScheme.onSurface
                 )
-                // Alt kısımda ek boşluk (isteğe bağlı)
-                // Spacer(modifier = Modifier.height(4.dp))
+            }
+        }
+    }
+}
+
+// Carousel İçindeki Kategori Kartı (Kısaltılmış Metin ile)
+@Composable
+fun CategoryPageItem(
+    category: CategoryEntity,
+    icon: ImageVector,
+    accentColor: Color,
+    modifier: Modifier = Modifier
+) {
+    Card(
+        modifier = modifier.fillMaxHeight(0.95f),
+        shape = MaterialTheme.shapes.extraLarge,
+        elevation = CardDefaults.cardElevation(defaultElevation = 10.dp),
+        colors = CardDefaults.cardColors(containerColor = Color.Transparent)
+    ) {
+        Box(
+            modifier = Modifier
+                .fillMaxSize()
+                .background(
+                    brush = Brush.verticalGradient(
+                        colors = listOf(
+                            accentColor.copy(alpha = 0.8f),
+                            MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.6f),
+                            accentColor.copy(alpha = 0.5f)
+                        )
+                    )
+                )
+        ) {
+            Column(
+                modifier = Modifier
+                    .fillMaxSize()
+                    .padding(32.dp),
+                horizontalAlignment = Alignment.CenterHorizontally,
+                verticalArrangement = Arrangement.Center
+            ) {
+                Box(
+                    modifier = Modifier
+                        .size(96.dp)
+                        .clip(CircleShape)
+                        .background(MaterialTheme.colorScheme.surface.copy(alpha = 0.5f)),
+                    contentAlignment = Alignment.Center
+                ) {
+                    Icon(
+                        imageVector = icon,
+                        contentDescription = category.name, // Orijinal isim kalsın
+                        modifier = Modifier.size(56.dp),
+                        tint = accentColor
+                    )
+                }
+                Spacer(modifier = Modifier.height(24.dp))
+                Text(
+                    text = category.name.substringAfterLast(':', category.name).trim(), // Kısaltılmış metin
+                    style = MaterialTheme.typography.headlineMedium,
+                    fontWeight = FontWeight.ExtraBold,
+                    color = MaterialTheme.colorScheme.onSurface,
+                    textAlign = TextAlign.Center,
+                    modifier = Modifier.padding(horizontal = 8.dp),
+                    maxLines = 2, // Kısaltıldığı için 2 satır yeterli olabilir
+                    overflow = TextOverflow.Ellipsis
+                )
             }
         }
     }
 }
 
 
+// Yatay Pager Göstergesi
 @OptIn(ExperimentalFoundationApi::class)
 @Composable
 fun HorizontalPagerIndicator(
@@ -401,12 +375,9 @@ fun HorizontalPagerIndicator(
     indicatorHeight: Dp = indicatorWidth,
     spacing: Dp = indicatorWidth,
     indicatorShape: Shape = CircleShape,
-    // Aktif indikatörün genişlik çarpanı
     activeIndicatorWidthMultiplier: Float = 2.0f
 ) {
-    // Aktif indikatörün animasyonlu genişliği
     val activeIndicatorWidth = indicatorWidth * activeIndicatorWidthMultiplier
-
     Row(
         modifier = modifier,
         horizontalArrangement = Arrangement.spacedBy(spacing),
@@ -414,145 +385,130 @@ fun HorizontalPagerIndicator(
     ) {
         val currentPage = pagerState.currentPage
         repeat(pagerState.pageCount) { iteration ->
-            // Genişlik animasyonu
             val width by animateDpAsState(
                 targetValue = if (currentPage == iteration) activeIndicatorWidth else indicatorWidth,
-                animationSpec = tween(durationMillis = 300, easing = FastOutSlowInEasing), // Yumuşak geçiş
+                animationSpec = tween(durationMillis = 300, easing = FastOutSlowInEasing),
                 label = "IndicatorWidthAnim"
             )
-            // Renk animasyonu (isteğe bağlı, ama genellikle gerekmez)
             val color = if (currentPage == iteration) activeColor else inactiveColor
             Box(
                 modifier = Modifier
                     .clip(indicatorShape)
                     .background(color)
                     .height(indicatorHeight)
-                    .width(width) // Animasyonlu genişlik
+                    .width(width)
             )
         }
     }
 }
 
-
+// Boş Durum Görünümü
 @Composable
 fun EmptyStateView(modifier: Modifier = Modifier) {
     Column(
-        modifier = modifier.padding(horizontal = 32.dp), // Kenarlardan boşluk
+        modifier = modifier.padding(horizontal = 32.dp).fillMaxSize(),
         horizontalAlignment = Alignment.CenterHorizontally,
         verticalArrangement = Arrangement.Center
     ) {
         Icon(
-            // Daha uygun bir ikon (örn. boş kutu veya arama bulunamadı)
-            Icons.Filled.SearchOff, // veya SentimentVeryDissatisfied
+            Icons.Filled.SearchOff,
             contentDescription = null,
-            modifier = Modifier.size(80.dp), // Daha büyük ikon
-            tint = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.7f) // Hafif soluk
+            modifier = Modifier.size(80.dp),
+            tint = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.7f)
         )
         Spacer(modifier = Modifier.height(24.dp))
         Text(
             stringResource(R.string.category_empty_state),
-            color = MaterialTheme.colorScheme.onSurfaceVariant, // Tema rengi
-            style = MaterialTheme.typography.titleMedium, // Daha uygun stil
+            color = MaterialTheme.colorScheme.onSurfaceVariant,
+            style = MaterialTheme.typography.titleMedium,
             textAlign = TextAlign.Center,
             fontWeight = FontWeight.Medium
         )
     }
 }
 
+// Hata Durumu Görünümü
 @Composable
 fun ErrorView(message: String, onRetry: () -> Unit, modifier: Modifier = Modifier) {
-    // Hata için Lottie animasyonu
-    val composition by rememberLottieComposition(LottieCompositionSpec.RawRes(R.raw.lottie_error)) // Kendi Lottie dosyanız
+    val composition by rememberLottieComposition(LottieCompositionSpec.RawRes(R.raw.lottie_error))
     Column(
         horizontalAlignment = Alignment.CenterHorizontally,
         verticalArrangement = Arrangement.Center,
-        modifier = modifier.padding(32.dp) // Daha fazla iç boşluk
+        modifier = modifier.padding(32.dp).fillMaxSize()
     ) {
         LottieAnimation(
             composition = composition,
-            modifier = Modifier.size(200.dp) // Daha büyük animasyon
+            modifier = Modifier.size(200.dp)
         )
         Spacer(modifier = Modifier.height(24.dp))
         Text(
-            text = stringResource(R.string.error_oops), // Başlık
-            style = MaterialTheme.typography.headlineSmall, // Başlık stili
-            color = MaterialTheme.colorScheme.error, // Hata rengi
+            text = stringResource(R.string.error_oops),
+            style = MaterialTheme.typography.headlineSmall,
+            color = MaterialTheme.colorScheme.error,
             fontWeight = FontWeight.Bold,
             textAlign = TextAlign.Center
         )
         Spacer(modifier = Modifier.height(12.dp))
         Text(
-            text = message, // Detaylı hata mesajı
-            style = MaterialTheme.typography.bodyLarge, // Daha okunaklı gövde metni
+            text = message,
+            style = MaterialTheme.typography.bodyLarge,
             textAlign = TextAlign.Center,
-            color = MaterialTheme.colorScheme.onSurfaceVariant // Yardımcı metin rengi
+            color = MaterialTheme.colorScheme.onSurfaceVariant
         )
-        Spacer(modifier = Modifier.height(40.dp)) // Buton için daha fazla boşluk
+        Spacer(modifier = Modifier.height(40.dp))
         Button(
             onClick = onRetry,
-            shape = MaterialTheme.shapes.medium, // Standart şekil
+            shape = MaterialTheme.shapes.medium,
             colors = ButtonDefaults.buttonColors(
-                containerColor = MaterialTheme.colorScheme.primary, // Ana renk
-                contentColor = MaterialTheme.colorScheme.onPrimary // Üzerindeki metin rengi
+                containerColor = MaterialTheme.colorScheme.primary,
+                contentColor = MaterialTheme.colorScheme.onPrimary
             ),
-            contentPadding = PaddingValues(horizontal = 32.dp, vertical = 12.dp) // Daha geniş buton
+            contentPadding = PaddingValues(horizontal = 32.dp, vertical = 12.dp)
         ) {
-            Icon(Icons.Filled.Refresh, contentDescription = null) // Yenileme ikonu
-            Spacer(Modifier.size(ButtonDefaults.IconSpacing)) // İkon ve metin arası boşluk
-            Text(stringResource(R.string.retry), fontWeight = FontWeight.Bold) // Kalın metin
+            Icon(Icons.Filled.Refresh, contentDescription = null)
+            Spacer(Modifier.size(ButtonDefaults.IconSpacing))
+            Text(stringResource(R.string.retry), fontWeight = FontWeight.Bold)
         }
     }
 }
 
-
-// Bu fonksiyon kategori isimlerine göre ikon eşleştirmesi yapar.
-// Yeni kategoriler eklenirse buraya da eklenmelidir.
-// (Bu fonksiyonu renk listesiyle birlikte aynı dosyada tutmak mantıklı)
-val vibrantIconColors = listOf( // Bu listeyi de buraya alalım
-    Color(0xFFEF5350), // Kırmızı
-    Color(0xFFEC407A), // Pembe
-    Color(0xFFAB47BC), // Mor
-    Color(0xFF7E57C2), // Derin Mor
-    Color(0xFF5C6BC0), // İndigo
-    Color(0xFF42A5F5), // Mavi
-    Color(0xFF29B6F6), // Açık Mavi
-    Color(0xFF26C6DA), // Camgöbeği
-    Color(0xFF26A69A), // Turkuaz
-    Color(0xFF66BB6A), // Yeşil
-    Color(0xFF9CCC65), // Açık Yeşil
-    Color(0xFFD4E157), // Limon Yeşili
-    Color(0xFFFFEE58), // Sarı
-    Color(0xFFFFCA28), // Kehribar
-    Color(0xFFFFA726), // Turuncu
-    Color(0xFFFF7043)  // Derin Turuncu
-)
-
+// Kategori İkonlarını Eşleştirme Fonksiyonu
 fun getIconForCategory(categoryName: String): ImageVector {
+    // İkon eşleştirmesi yapılırken orijinal, tam ismi kullanmak daha güvenli olabilir.
+    val nameToCheck = categoryName // Veya gerekirse burada da kısaltma yapılabilir, ama genellikle gerekmez.
     return when {
-        categoryName.contains("Knowledge", ignoreCase = true) -> Icons.Filled.AutoStories
-        categoryName.contains("Books", ignoreCase = true) -> Icons.Filled.LibraryBooks
-        categoryName.contains("Film", ignoreCase = true) -> Icons.Filled.Theaters
-        categoryName.contains("Music", ignoreCase = true) -> Icons.Filled.MusicNote
-        categoryName.contains("Musicals & Theatres", ignoreCase = true) -> Icons.Filled.TheaterComedy
-        categoryName.contains("Television", ignoreCase = true) -> Icons.Filled.Tv
-        categoryName.contains("Video Games", ignoreCase = true) -> Icons.Filled.VideogameAsset
-        categoryName.contains("Board Games", ignoreCase = true) -> Icons.Filled.Casino
-        categoryName.contains("Science & Nature", ignoreCase = true) -> Icons.Filled.Science
-        categoryName.contains("Computers", ignoreCase = true) -> Icons.Filled.Computer
-        categoryName.contains("Mathematics", ignoreCase = true) -> Icons.Filled.Calculate
-        categoryName.contains("Mythology", ignoreCase = true) -> Icons.Filled.Fort
-        categoryName.contains("Sports", ignoreCase = true) -> Icons.Filled.SportsBasketball
-        categoryName.contains("Geography", ignoreCase = true) -> Icons.Filled.Public
-        categoryName.contains("History", ignoreCase = true) -> Icons.Filled.Museum
-        categoryName.contains("Politics", ignoreCase = true) -> Icons.Filled.Gavel
-        categoryName.contains("Art", ignoreCase = true) -> Icons.Filled.Palette
-        categoryName.contains("Celebrities", ignoreCase = true) -> Icons.Filled.Star
-        categoryName.contains("Animals", ignoreCase = true) -> Icons.Filled.Pets
-        categoryName.contains("Vehicles", ignoreCase = true) -> Icons.Filled.DirectionsCar
-        categoryName.contains("Comics", ignoreCase = true) -> Icons.Filled.MenuBook
-        categoryName.contains("Gadgets", ignoreCase = true) -> Icons.Filled.PhonelinkSetup
-        categoryName.contains("Japanese Anime & Manga", ignoreCase = true) -> Icons.Filled.Face
-        categoryName.contains("Cartoon & Animations", ignoreCase = true) -> Icons.Filled.Animation
-        else -> Icons.Filled.Category
+        nameToCheck.contains("Knowledge", ignoreCase = true) -> Icons.Filled.AutoStories
+        nameToCheck.contains("Books", ignoreCase = true) -> Icons.Filled.LibraryBooks
+        nameToCheck.contains("Film", ignoreCase = true) -> Icons.Filled.Theaters
+        nameToCheck.contains("Music", ignoreCase = true) -> Icons.Filled.MusicNote
+        nameToCheck.contains("Musicals & Theatres", ignoreCase = true) -> Icons.Filled.TheaterComedy
+        nameToCheck.contains("Television", ignoreCase = true) -> Icons.Filled.Tv
+        nameToCheck.contains("Video Games", ignoreCase = true) -> Icons.Filled.VideogameAsset
+        nameToCheck.contains("Board Games", ignoreCase = true) -> Icons.Filled.Casino
+        nameToCheck.contains("Science & Nature", ignoreCase = true) -> Icons.Filled.Science
+        nameToCheck.contains("Computers", ignoreCase = true) -> Icons.Filled.Computer
+        nameToCheck.contains("Mathematics", ignoreCase = true) -> Icons.Filled.Calculate
+        nameToCheck.contains("Mythology", ignoreCase = true) -> Icons.Filled.Fort
+        nameToCheck.contains("Sports", ignoreCase = true) -> Icons.Filled.SportsBasketball
+        nameToCheck.contains("Geography", ignoreCase = true) -> Icons.Filled.Public
+        nameToCheck.contains("History", ignoreCase = true) -> Icons.Filled.Museum
+        nameToCheck.contains("Politics", ignoreCase = true) -> Icons.Filled.Gavel
+        nameToCheck.contains("Art", ignoreCase = true) -> Icons.Filled.Palette
+        nameToCheck.contains("Celebrities", ignoreCase = true) -> Icons.Filled.Star
+        nameToCheck.contains("Animals", ignoreCase = true) -> Icons.Filled.Pets
+        nameToCheck.contains("Vehicles", ignoreCase = true) -> Icons.Filled.DirectionsCar
+        nameToCheck.contains("Comics", ignoreCase = true) -> Icons.Filled.MenuBook
+        nameToCheck.contains("Gadgets", ignoreCase = true) -> Icons.Filled.PhonelinkSetup
+        nameToCheck.contains("Japanese Anime & Manga", ignoreCase = true) -> Icons.Filled.Face
+        nameToCheck.contains("Cartoon & Animations", ignoreCase = true) -> Icons.Filled.Animation
+        else -> Icons.Filled.Category // Varsayılan ikon
     }
 }
+
+// İkonlar ve Kart Arka Planları İçin Renk Paleti
+val vibrantIconColors = listOf(
+    Color(0xFFEF5350), Color(0xFFEC407A), Color(0xFFAB47BC), Color(0xFF7E57C2),
+    Color(0xFF5C6BC0), Color(0xFF42A5F5), Color(0xFF29B6F6), Color(0xFF26C6DA),
+    Color(0xFF26A69A), Color(0xFF66BB6A), Color(0xFF9CCC65), Color(0xFFD4E157),
+    Color(0xFFFFEE58), Color(0xFFFFCA28), Color(0xFFFFA726), Color(0xFFFF7043)
+)
