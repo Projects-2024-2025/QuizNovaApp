@@ -38,7 +38,6 @@ import androidx.compose.ui.util.lerp
 import com.airbnb.lottie.compose.*
 import com.technovix.quiznova.R // Kendi R dosyanızın importu
 import com.technovix.quiznova.data.local.entity.CategoryEntity
-import com.technovix.quiznova.ui.theme.* // Kendi tema importlarınız
 import kotlin.math.absoluteValue
 
 

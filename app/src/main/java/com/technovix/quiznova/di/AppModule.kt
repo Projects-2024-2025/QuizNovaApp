@@ -11,8 +11,12 @@ import com.technovix.quiznova.data.datasource.local.QuizLocalDataSource
 import com.technovix.quiznova.data.datasource.local.QuizLocalDataSourceImpl
 import com.technovix.quiznova.data.datasource.remote.QuizRemoteDataSource
 import com.technovix.quiznova.data.datasource.remote.QuizRemoteDataSourceImpl
+import com.technovix.quiznova.data.datastore.ThemeSettingsRepository
 import com.technovix.quiznova.data.repository.QuizRepository
 import com.technovix.quiznova.data.repository.QuizRepositoryImpl
+import com.technovix.quiznova.util.AndroidHtmlDecoder
+import com.technovix.quiznova.util.HtmlDecoder
+import dagger.Binds
 import dagger.Module
 import dagger.Provides
 import dagger.hilt.InstallIn
@@ -107,5 +111,18 @@ object DataModule {
         networkMonitor: NetworkMonitor
     ): QuizRepository {
         return QuizRepositoryImpl(remoteDataSource, localDataSource, networkMonitor)
+    }
+
+    @Provides
+    @Singleton
+    fun provideThemeSettingsRepository(@ApplicationContext context: Context): ThemeSettingsRepository {
+        // Bu fonksiyonun DataModule object'inin İÇİNDE olduğundan emin olun
+        return ThemeSettingsRepository(context)
+    }
+
+    @Provides
+    @Singleton
+    fun provideHtmlDecoder(): HtmlDecoder { // Parametre yok, dönüş türü Arayüz
+        return AndroidHtmlDecoder() // Implementasyonu doğrudan oluşturup döndür
     }
 }

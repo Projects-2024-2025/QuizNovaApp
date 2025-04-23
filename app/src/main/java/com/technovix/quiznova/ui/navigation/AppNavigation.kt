@@ -1,6 +1,5 @@
 package com.technovix.quiznova.ui.navigation
 
-import android.util.Log
 import androidx.compose.animation.*
 import androidx.compose.animation.core.tween
 import androidx.compose.runtime.Composable
@@ -15,6 +14,7 @@ import com.technovix.quiznova.ui.screen.quiz.QuizScreen
 import com.technovix.quiznova.ui.screen.settings.SettingsScreen
 import com.technovix.quiznova.util.ThemePreference
 import com.technovix.quiznova.ui.screen.splash.SplashScreen
+import timber.log.Timber
 
 @Composable
 fun AppNavigation(
@@ -61,7 +61,8 @@ fun AppNavigation(
                 navArgument("categoryName") { type = NavType.StringType }
             )
         ) { backStackEntry ->
-            Log.d("AppNavigation", "QuizScreen composable entered. Args: ${backStackEntry.arguments}")
+            Timber.tag("AppNavigation")
+                .d("QuizScreen composable entered. Args: %s", backStackEntry.arguments)
             // val categoryId = backStackEntry.arguments?.getInt("categoryId") ?: 0 // Gerekirse kullan
             val categoryName = backStackEntry.arguments?.getString("categoryName") ?: "Quiz"
 
@@ -74,9 +75,7 @@ fun AppNavigation(
         }
         composable(Screen.Settings.route) {
             SettingsScreen(
-                navController = navController,
-                currentTheme = themePreference, // Mevcut temayı göstermek için
-                onThemeChange = onThemeChange   // Temayı değiştirmek için
+                navController = navController
             )
         }
         // Gelecekteki ekranlar buraya eklenecek

@@ -13,6 +13,7 @@
     <string name="quiz_finish">Bitir</string>
     <string name="quiz_submit_answer">Cevabı Onayla</string>
     <string name="cd_correct_answer">Doğru Cevap</string>
+    <string name="cd_incorrect_answer">Yanlış Cevap</string>
     <string name="quiz_result_perfect">Mükemmel Skor!</string>
     <string name="quiz_result_great">Harika İş!</string>
     <string name="quiz_result_good">Fena Değil!</string>

@@ -16,4 +16,6 @@ class QuizLocalDataSourceImpl @Inject constructor(
     override suspend fun insertCategories(categories: List<CategoryEntity>) = dao.insertCategories(categories)
     override fun getAllCategories(): Flow<List<CategoryEntity>> = dao.getAllCategories()
     override suspend fun getCategoryCount(): Int = dao.getCategoryCount()
+    override suspend fun getOldestQuestionTimestamp(category: String): Long? = dao.getOldestQuestionTimestamp(category)
+
 }

@@ -31,4 +31,7 @@ interface QuizDao {
 
     @Query("SELECT COUNT(*) FROM categories")
     suspend fun getCategoryCount(): Int
+
+    @Query("SELECT MIN(fetchedTimestamp) FROM questions WHERE category = :category")
+    suspend fun getOldestQuestionTimestamp(category: String): Long?
 }

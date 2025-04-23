@@ -19,6 +19,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
@@ -38,6 +39,7 @@ import com.technovix.quiznova.util.ThemePreference
 import com.technovix.quiznova.ui.theme.*
 import com.technovix.quiznova.ui.viewmodel.CategoryViewModel
 import com.technovix.quiznova.util.Resource
+import timber.log.Timber
 
 @OptIn(ExperimentalMaterial3Api::class, ExperimentalFoundationApi::class)
 @Composable
@@ -66,7 +68,7 @@ fun CategoryScreen(
         try {
             navController.navigate(route)
         } catch (e: Exception) {
-            Log.e("CategoryNavigation", "Navigasyon başarısız: Rota='${route}'", e)
+            Timber.tag("CategoryNavigation").e(e, "Navigasyon başarısız: Rota='" + route + "'")
         }
     }
 
@@ -107,7 +109,8 @@ fun CategoryScreen(
                                     navController.navigate(Screen.Settings.route)
                                     showMenu = false
                                 },
-                                leadingIcon = { Icon(Icons.Default.Settings, null, tint = MaterialTheme.colorScheme.primary) }
+                                leadingIcon = { Icon(Icons.Default.Settings, null, tint = MaterialTheme.colorScheme.primary) },
+                                modifier = Modifier.testTag("settings_menu_item")
                             )
                             HorizontalDivider(modifier = Modifier.padding(vertical = 4.dp))
                             DropdownMenuItem(
@@ -145,9 +148,13 @@ fun CategoryScreen(
                     .pointerInput(Unit) {
                         detectTransformGestures { _, _, zoom, _ ->
                             if (isGridViewVisible) {
-                                if (zoom > zoomInThreshold) { isGridViewVisible = false }
+                                if (zoom > zoomInThreshold) {
+                                    isGridViewVisible = false
+                                }
                             } else {
-                                if (zoom < zoomOutThreshold) { isGridViewVisible = true }
+                                if (zoom < zoomOutThreshold) {
+                                    isGridViewVisible = true
+                                }
                             }
                         }
                     }

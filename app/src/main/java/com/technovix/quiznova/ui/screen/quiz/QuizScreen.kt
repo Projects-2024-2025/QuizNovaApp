@@ -13,6 +13,7 @@ import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
@@ -27,7 +28,6 @@ import com.technovix.quiznova.ui.components.LoadingAnimationQuiz
 import com.technovix.quiznova.ui.components.QuestionContent
 import com.technovix.quiznova.ui.components.QuizResultContent
 import com.technovix.quiznova.ui.theme.*
-import com.technovix.quiznova.ui.viewmodel.QuizUiState
 import com.technovix.quiznova.ui.viewmodel.QuizViewModel
 import com.technovix.quiznova.util.Resource
 import com.technovix.quiznova.util.ThemePreference
@@ -101,6 +101,7 @@ fun QuizScreen(
             modifier = Modifier
                 .fillMaxSize()
                 .background(backgroundBrush)
+                .testTag("quiz_screen_container")
         ) {
             Box(
                 modifier = Modifier

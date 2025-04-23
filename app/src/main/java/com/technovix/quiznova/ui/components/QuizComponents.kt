@@ -25,6 +25,8 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.semantics.Role
+import androidx.compose.ui.semantics.heading
+import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextOverflow
@@ -490,7 +492,8 @@ fun QuizResultContent( // İsim değişikliği (isteğe bağlı)
             stringResource(R.string.quiz_result_summary), // Başlık
             style = MaterialTheme.typography.titleMedium,
             fontWeight = FontWeight.Bold,
-            color = MaterialTheme.colorScheme.onSurfaceVariant
+            color = MaterialTheme.colorScheme.onSurfaceVariant,
+            modifier = Modifier.semantics { heading() }
         )
         Spacer(modifier = Modifier.height(12.dp))
 
@@ -500,7 +503,11 @@ fun QuizResultContent( // İsim değişikliği (isteğe bağlı)
                 .weight(1f) // Kalan alanı doldur
                 .fillMaxWidth()
                 .clip(MaterialTheme.shapes.medium) // Yuvarlak köşeler
-                .background(MaterialTheme.colorScheme.surfaceColorAtElevation(1.dp).copy(alpha = 0.5f)) // Hafif arka plan
+                .background(
+                    MaterialTheme.colorScheme
+                        .surfaceColorAtElevation(1.dp)
+                        .copy(alpha = 0.5f)
+                ) // Hafif arka plan
                 .padding(vertical = 8.dp)
         ) {
             itemsIndexed(
@@ -516,9 +523,11 @@ fun QuizResultContent( // İsim değişikliği (isteğe bağlı)
                         .padding(horizontal = 16.dp, vertical = 12.dp)
                 ) {
                     // Doğru/Yanlış ikonu
+                    val correctnessDesc = if (isCorrect) stringResource(R.string.cd_correct_answer) else
+                        stringResource(R.string.cd_incorrect_answer)
                     Icon(
                         imageVector = if(isCorrect) Icons.Filled.CheckCircle else Icons.Filled.Cancel,
-                        contentDescription = null,
+                        contentDescription = correctnessDesc,
                         tint = if(isCorrect) SuccessGreen else ErrorRed,
                         modifier = Modifier
                             .size(22.dp)
@@ -576,7 +585,9 @@ fun QuizResultContent( // İsim değişikliği (isteğe bağlı)
             // Kategorilere Dön Butonu (Kenarlıklı)
             OutlinedButton(
                 onClick = onBackToCategories,
-                modifier = Modifier.weight(1f).height(52.dp),
+                modifier = Modifier
+                    .weight(1f)
+                    .height(52.dp),
                 shape = MaterialTheme.shapes.medium,
                 border = BorderStroke(1.dp, MaterialTheme.colorScheme.outline)
             ) {
@@ -587,7 +598,9 @@ fun QuizResultContent( // İsim değişikliği (isteğe bağlı)
             // Tekrar Oyna Butonu (Dolgulu)
             Button(
                 onClick = onRestart,
-                modifier = Modifier.weight(1f).height(52.dp),
+                modifier = Modifier
+                    .weight(1f)
+                    .height(52.dp),
                 shape = MaterialTheme.shapes.medium,
                 elevation = ButtonDefaults.buttonElevation(defaultElevation = 4.dp),
                 colors = ButtonDefaults.buttonColors(containerColor = MaterialTheme.colorScheme.primary)
@@ -608,7 +621,9 @@ fun LoadingAnimationQuiz(modifier: Modifier = Modifier) {
     Column(
         horizontalAlignment = Alignment.CenterHorizontally,
         verticalArrangement = Arrangement.Center, // Ortala
-        modifier = modifier.padding(16.dp).fillMaxSize() // Tüm alanı kapla
+        modifier = modifier
+            .padding(16.dp)
+            .fillMaxSize() // Tüm alanı kapla
     ){
         LottieAnimation(
             composition = composition,

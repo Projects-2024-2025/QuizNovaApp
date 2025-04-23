@@ -13,4 +13,6 @@ interface QuizLocalDataSource {
     suspend fun insertCategories(categories: List<CategoryEntity>)
     fun getAllCategories(): Flow<List<CategoryEntity>>
     suspend fun getCategoryCount(): Int
+
+    suspend fun getOldestQuestionTimestamp(category: String): Long?
 }
