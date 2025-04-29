@@ -21,8 +21,14 @@
 #-renamesourcefileattribute SourceFile
 
 # Keep data classes used by Gson
--keep class com.example.quizapp.data.remote.dto.** { *; }
--keep class com.example.quizapp.data.local.entity.** { *; }
+-keep class com.technovix.quiznova.data.remote.dto.** { *; }
+-keepnames class com.technovix.quiznova.data.remote.dto.** { *; }
+
+-keep class com.technovix.quiznova.data.local.entity.** { *; }
+-keepnames class com.technovix.quiznova.data.local.entity.** { *; }
+
+# Keep Room DAO Interfaces
+-keep interface com.technovix.quiznova.data.local.QuizDao { *; }
 
 # Keep members for GSON (needed if you use @SerializedName)
 -keepclassmembers class * {
