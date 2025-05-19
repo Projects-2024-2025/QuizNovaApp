@@ -7,7 +7,7 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material3.*
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.collectAsState // StateFlow'u State'e çevirmek için
+import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -17,29 +17,25 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.navigation.NavController
 import com.technovix.quiznova.R
-import androidx.compose.foundation.isSystemInDarkTheme
-import com.technovix.quiznova.ui.theme.darkAppBackgroundGradient
-import com.technovix.quiznova.ui.theme.lightAppBackgroundGradient
 import androidx.compose.foundation.background
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.testTag
-import androidx.hilt.navigation.compose.hiltViewModel // ViewModel'i almak için
-import com.technovix.quiznova.ui.viewmodel.SettingsViewModel // ViewModel'i import et
+import androidx.hilt.navigation.compose.hiltViewModel
+import com.technovix.quiznova.ui.viewmodel.SettingsViewModel
 import androidx.compose.ui.semantics.heading
 import androidx.compose.ui.semantics.semantics
+import com.technovix.quiznova.ui.theme.darkAppBackgroundGradient
+import com.technovix.quiznova.ui.theme.lightAppBackgroundGradient
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun SettingsScreen(
     navController: NavController,
-    // ViewModel'i Hilt aracılığıyla alıyoruz
     viewModel: SettingsViewModel = hiltViewModel()
 ) {
-    // ViewModel'den mevcut tema durumunu alıyoruz
     val currentTheme by viewModel.currentTheme.collectAsState()
 
-    // Arka planı mevcut temaya göre ayarlıyoruz
-    val backgroundBrush = if (currentTheme == ThemePreference.DARK || (currentTheme == ThemePreference.SYSTEM && isSystemInDarkTheme())) {
+    val backgroundBrush = if (currentTheme == ThemePreference.DARK) {
         darkAppBackgroundGradient()
     } else {
         lightAppBackgroundGradient()
@@ -81,34 +77,33 @@ fun SettingsScreen(
                     color = MaterialTheme.colorScheme.primary,
                     modifier = Modifier
                         .padding(bottom = 8.dp)
-                        .semantics { heading() }
+                        .semantics { heading() } // Accessibility: Marks this as a heading.
                 )
 
-                // Tema seçeneklerini döngüyle oluşturuyoruz
+                // Iterate through available theme preferences (LIGHT, DARK).
                 ThemePreference.values().forEach { themePref ->
+                    // Skip SYSTEM preference if it's somehow still in the enum (it shouldn't be).
+                    // if (themePref == ThemePreference.SYSTEM) return@forEach
+
                     ThemePreferenceRow(
                         theme = themePref,
-                        // Seçili olup olmadığını ViewModel'deki state'e göre belirliyoruz
                         isSelected = currentTheme == themePref,
-                        // Seçildiğinde ViewModel'deki fonksiyonu çağırıyoruz
                         onSelected = { viewModel.changeTheme(themePref) }
                     )
                 }
-
                 Spacer(modifier = Modifier.height(24.dp))
-
-                // Diğer ayarlar buraya eklenebilir...
-
-            } // End Column
-        } // End Box (Background)
-    } // End Scaffold
+                // Other settings can be added here.
+            }
+        }
+    }
 }
 
 /**
- * Ayarlar ekranındaki her bir tema seçeneği satırını temsil eder.
- * (Bu Composable değişmedi)
+ * A row representing a single theme preference option in settings.
+ * @param theme The [ThemePreference] this row represents.
+ * @param isSelected True if this theme is currently selected.
+ * @param onSelected Callback invoked when this theme option is selected.
  */
-/*
 @Composable
 private fun ThemePreferenceRow(
     theme: ThemePreference,
@@ -118,8 +113,10 @@ private fun ThemePreferenceRow(
     val textRes = when (theme) {
         ThemePreference.LIGHT -> R.string.theme_light
         ThemePreference.DARK -> R.string.theme_dark
-        ThemePreference.SYSTEM -> R.string.theme_system
+        // ThemePreference.SYSTEM -> R.string.theme_system // SYSTEM is removed
     }
+    val radioTag = "theme_radio_${theme.name.lowercase()}"
+    val rowTag = "theme_row_${theme.name.lowercase()}"
 
     Row(
         modifier = Modifier
@@ -127,60 +124,22 @@ private fun ThemePreferenceRow(
             .selectable(
                 selected = isSelected,
                 onClick = onSelected,
-                role = Role.RadioButton
-            )
-            .padding(vertical = 12.dp),
-        verticalAlignment = Alignment.CenterVertically
-    ) {
-        RadioButton(
-            selected = isSelected,
-            onClick = null // Tıklamayı Row hallediyor
-        )
-        Spacer(modifier = Modifier.width(16.dp))
-        Text(
-            text = stringResource(id = textRes),
-            style = MaterialTheme.typography.bodyLarge
-        )
-    }
-}
-
- */
-// SettingsScreen.kt veya ilgili dosya içinde
-
-@Composable
-private fun ThemePreferenceRow(
-    theme: ThemePreference,
-    isSelected: Boolean,
-    onSelected: () -> Unit
-) {
-    val textRes = when (theme) { ThemePreference.LIGHT -> R.string.theme_light
-        ThemePreference.DARK -> R.string.theme_dark
-        ThemePreference.SYSTEM -> R.string.theme_system }
-    // Test tag'lerini oluştur
-    val radioTag = "theme_radio_${theme.name.lowercase()}" // örn: "theme_radio_system"
-    val rowTag = "theme_row_${theme.name.lowercase()}" // örn: "theme_row_system"
-
-    Row(
-        modifier = Modifier
-            .fillMaxWidth()
-            .selectable(
-                selected = isSelected,
-                onClick = onSelected,
-                role = Role.RadioButton
+                role = Role.RadioButton // Accessibility role.
             )
             .padding(vertical = 12.dp)
-            .testTag(rowTag), // Tıklama için Row'a tag ekle
+            .testTag(rowTag), // Test tag for UI testing.
         verticalAlignment = Alignment.CenterVertically
     ) {
         RadioButton(
             selected = isSelected,
-            onClick = null,
-            modifier = Modifier.testTag(radioTag) // RadioButton'a tag ekle
+            onClick = null, // Handled by Row's selectable.
+            modifier = Modifier.testTag(radioTag) // Test tag for UI testing.
         )
         Spacer(modifier = Modifier.width(16.dp))
         Text(
             text = stringResource(id = textRes),
-            style = MaterialTheme.typography.bodyLarge
+            style = MaterialTheme.typography.bodyLarge,
+            color = MaterialTheme.colorScheme.onSurface // Ensure text color adapts to theme
         )
     }
 }

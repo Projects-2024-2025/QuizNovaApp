@@ -1,12 +1,18 @@
 package com.technovix.quiznova.ui.navigation
 
+// Defines application's navigation routes.
 sealed class Screen(val route: String) {
-    object Splash : Screen("splash")
-    object Category : Screen("category")
-    object Quiz : Screen("quiz/{categoryId}/{categoryName}") {
+    object Splash : Screen("splash") // Splash screen route
+    object Category : Screen("category") // Category selection screen route
+    object Quiz : Screen("quiz/{categoryId}/{categoryName}") { // Quiz screen route with arguments
+        /**
+         * Creates the route for the Quiz screen with specific category ID and name.
+         * @param categoryId The ID of the selected category.
+         * @param categoryName The name of the selected category.
+         * @return The-generated route string.
+         */
         fun createRoute(categoryId: Int, categoryName: String) = "quiz/$categoryId/$categoryName"
     }
-    // Gelecekte eklenebilecek ekranlar için buraya ekleme yapabilirsin
-    object Settings : Screen("settings")
-    // object About : Screen("about")
+    object Settings : Screen("settings") // Settings screen route
+    object About : Screen("about") // About screen route
 }

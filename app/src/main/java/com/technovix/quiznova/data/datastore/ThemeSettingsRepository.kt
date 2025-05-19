@@ -14,39 +14,44 @@ import java.io.IOException
 import javax.inject.Inject
 import javax.inject.Singleton
 
-// Context için DataStore örneğini tanımla (genellikle dosya başında yapılır)
-private val Context.dataStore: DataStore<Preferences> by preferencesDataStore(name="settings")
+// Application context DataStore instance.
+private val Context.dataStore: DataStore<Preferences> by preferencesDataStore(name = "settings")
 
 @Singleton
 class ThemeSettingsRepository @Inject constructor(
     @ApplicationContext private val context: Context
 ) {
-    // Tema tercihini saklamak için bir anahtar (Key) tanımlıyoruz
+    // Key for storing theme preference.
     private val THEME_PREFERENCE_KEY = stringPreferencesKey("theme_preference")
 
-    // Tema tercihini DataStore'a kaydetme fonksiyonu
+    /**
+     * Saves the selected theme preference to DataStore.
+     * @param themePreference The theme preference to save.
+     */
     suspend fun saveThemePreference(themePreference: ThemePreference) {
         try {
             context.dataStore.edit { preferences ->
-                preferences[THEME_PREFERENCE_KEY] =
-                    themePreference.name // Enum'ı String olarak kaydediyoruz
+                preferences[THEME_PREFERENCE_KEY] = themePreference.name // Store enum name as String.
             }
         } catch (e: IOException) {
-            // Hata yönetimi (örn: loglama)
-            println("Tema kaydedilirken hata: ${e.localizedMessage}")
+            // Handle error, e.g., log it.
+            println("Error saving theme: ${e.localizedMessage}")
         }
     }
 
-    // Tema tercihini DataStore'dan okuyan bir Flow
+    /**
+     * Flow to observe theme preference changes from DataStore.
+     * Defaults to LIGHT if no preference is found or if the stored value is invalid.
+     */
     val themePreferenceFlow: Flow<ThemePreference> = context.dataStore.data
         .map { preferences ->
-            // Kayıtlı String'i oku, yoksa veya geçersizse varsayılan olarak SYSTEM kullan
-            val themeName = preferences[THEME_PREFERENCE_KEY] ?: ThemePreference.SYSTEM.name
+            // Read stored theme name, default to LIGHT.
+            val themeName = preferences[THEME_PREFERENCE_KEY] ?: ThemePreference.LIGHT.name
             try {
                 ThemePreference.valueOf(themeName)
             } catch (e: IllegalArgumentException) {
-                // Geçersiz bir değer kaydedilmişse varsayılana dön
-                ThemePreference.SYSTEM
+                // Fallback to LIGHT if stored value is invalid.
+                ThemePreference.LIGHT
             }
         }
 }

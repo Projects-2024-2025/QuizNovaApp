@@ -23,7 +23,7 @@ class SettingsViewModel @Inject constructor(
             scope = viewModelScope, // ViewModel'in Coroutine scope'u
             //started = SharingStarted.WhileSubscribed(5000), // Ekran görünürken akışı aktif tut
             started = SharingStarted.Eagerly,
-            initialValue = ThemePreference.SYSTEM // Başlangıç değeri
+            initialValue = ThemePreference.LIGHT // Başlangıç değeri
         )
 
     // Kullanıcı yeni bir tema seçtiğinde çağrılacak fonksiyon

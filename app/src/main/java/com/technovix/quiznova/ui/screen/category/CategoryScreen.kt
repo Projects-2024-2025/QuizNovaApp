@@ -56,7 +56,7 @@ fun CategoryScreen(
     val zoomOutThreshold = 0.85f
     val zoomInThreshold = 1.15f
 
-    val backgroundBrush = if (currentTheme == ThemePreference.DARK || (currentTheme == ThemePreference.SYSTEM && isSystemInDarkTheme())) {
+    val backgroundBrush = if (currentTheme == ThemePreference.DARK) {
         darkAppBackgroundGradient()
     } else {
         lightAppBackgroundGradient()
@@ -127,7 +127,8 @@ fun CategoryScreen(
                             )
                             DropdownMenuItem(
                                 text = { Text(stringResource(R.string.menu_about)) },
-                                onClick = { /* TODO: Hakkında ekranına git */ showMenu = false },
+                                onClick = { navController.navigate(Screen.About.route)
+                                    showMenu = false },
                                 leadingIcon = { Icon(Icons.Default.Info, null, tint = MaterialTheme.colorScheme.tertiary) }
                             )
                         }

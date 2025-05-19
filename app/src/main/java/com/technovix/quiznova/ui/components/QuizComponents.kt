@@ -68,7 +68,6 @@ fun ExitConfirmationDialog(
 
 
 // --- Soru Gösterim Alanı ---
-@OptIn(ExperimentalAnimationApi::class)
 @Composable
 fun QuestionContent(
     uiState: QuizUiState,
@@ -417,10 +416,10 @@ fun QuizResultContent( // İsim değişikliği (isteğe bağlı)
     // remember içinde sadece kaynak ID'leri ve renk türünü hesapla (Composable çağrısı yok)
     val resultData = remember(scorePercentage) {
         when {
-            scorePercentage == 1f -> Triple(R.string.quiz_result_perfect, R.raw.lottie_congrats, ResultType.PERFECT)
-            scorePercentage >= 0.7f -> Triple(R.string.quiz_result_great, R.raw.lottie_success, ResultType.GREAT)
-            scorePercentage >= 0.4f -> Triple(R.string.quiz_result_good, R.raw.lottie_neutral, ResultType.GOOD)
-            else -> Triple(R.string.quiz_result_bad, R.raw.lottie_fail, ResultType.BAD)
+            scorePercentage == 1f -> Triple(R.string.quiz_result_perfect, R.raw.lottie_anim_score, ResultType.PERFECT)
+            scorePercentage >= 0.7f -> Triple(R.string.quiz_result_great, R.raw.lottie_anim_score, ResultType.GREAT)
+            scorePercentage >= 0.4f -> Triple(R.string.quiz_result_good, R.raw.lottie_anim_score, ResultType.GOOD)
+            else -> Triple(R.string.quiz_result_bad, R.raw.lottie_anim_score, ResultType.BAD)
         }
     }
     val (resultMessageResId, lottieResId, resultType) = resultData

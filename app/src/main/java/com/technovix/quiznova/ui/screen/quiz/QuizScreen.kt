@@ -59,7 +59,7 @@ fun QuizScreen(
         )
     }
 
-    val backgroundBrush = if (currentTheme == ThemePreference.DARK || (currentTheme == ThemePreference.SYSTEM && isSystemInDarkTheme())) {
+    val backgroundBrush = if (currentTheme == ThemePreference.DARK) {
         darkAppBackgroundGradient()
     } else {
         lightAppBackgroundGradient()

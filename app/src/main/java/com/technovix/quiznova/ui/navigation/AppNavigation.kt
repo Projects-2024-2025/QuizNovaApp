@@ -9,6 +9,7 @@ import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
 import androidx.navigation.navArgument
+import com.technovix.quiznova.ui.screen.about.AboutScreen
 import com.technovix.quiznova.ui.screen.category.CategoryScreen
 import com.technovix.quiznova.ui.screen.quiz.QuizScreen
 import com.technovix.quiznova.ui.screen.settings.SettingsScreen
@@ -20,7 +21,7 @@ import timber.log.Timber
 fun AppNavigation(
     // Tema state'i ve değiştiricisi parametre olarak eklendi
     themePreference: ThemePreference,
-    onThemeChange: (ThemePreference) -> Unit
+    //onThemeChange: (ThemePreference) -> Unit
 ) {
     val navController = rememberNavController()
     // Animasyon ayarları (isteğe bağlı)
@@ -78,15 +79,10 @@ fun AppNavigation(
                 navController = navController
             )
         }
-        // Gelecekteki ekranlar buraya eklenecek
-        /*
-        composable(Screen.Settings.route) {
-             SettingsScreen(
-                 currentTheme = themePreference,
-                 onThemeChange = onThemeChange,
-                 // ...
-             )
+
+        // About Screen
+        composable(Screen.About.route) {
+            AboutScreen(navController = navController)
         }
-        */
     }
 }

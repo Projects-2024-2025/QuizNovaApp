@@ -111,14 +111,13 @@ fun darkAppBackgroundGradient(): Brush {
 
 @Composable
 fun QuizAppTheme(
-    themePreference: ThemePreference = ThemePreference.SYSTEM,
+    themePreference: ThemePreference = ThemePreference.LIGHT,
     dynamicColor: Boolean = false,
     content: @Composable () -> Unit
 ) {
     val darkTheme = when (themePreference) {
         ThemePreference.LIGHT -> false
         ThemePreference.DARK -> true
-        ThemePreference.SYSTEM -> isSystemInDarkTheme()
     }
 
     val colorScheme = when {
