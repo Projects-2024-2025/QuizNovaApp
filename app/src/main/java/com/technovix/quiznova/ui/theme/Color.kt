@@ -10,6 +10,7 @@ val PurpleGrey40 = Color(0xFF625b71)
 val Pink40 = Color(0xFF7D5260)
 
 // Quiz için özel renkler (Burada tanımlamak daha merkezi olur)
+val PositiveGreen = Color(0xFF3DD598)
 val SuccessGreen = Color(0xFF4CAF50) // Başarı rengi
 val ErrorRed = Color(0xFFF44336)     // Hata/Yanlış rengi
 val HighlightYellow = Color(0xFFFFC107) // Vurgu/Mükemmel rengi
