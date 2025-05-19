@@ -66,4 +66,35 @@
     <string name="about_description">QuizNova is a fun and engaging quiz application designed to test your knowledge across a wide variety of categories. Enjoy learning new things and challenging yourself!</string>
     <string name="about_developed_by">Developed by:</string>
 
+        <!-- QuizRepository Error Messages -->
+        <string name="error_categories_unknown">Unknown error loading categories: %s</string>
+        <string name="error_questions_not_enough">Not enough questions found. Try a different category.</string>
+        <string name="error_questions_update_failed_showing_old">Error updating questions, showing old data: %s</string>
+        <string name="error_questions_processing_failed">Error processing questions: %s</string>
+        <string name="error_offline_no_cached_questions">You are offline and no saved questions found for this category.</string>
+        <string name="error_questions_unknown_flow">Unknown error loading questions: %s</string>
+        <string name="error_unknown_server_or_network">An unknown server or network error occurred.</string>
+        <string name="error_data_update_failed_showing_old">Could not update data (%1$s), showing old data.</string>
+        <string name="error_questions_load_failed">Could not load questions: %s</string>
+
+        <!-- QuizRemoteDataSourceImpl Error Messages -->
+        <string name="api_error_no_results">Not enough questions found. Try a different category or fewer questions.</string>
+        <string name="api_error_invalid_parameter">Invalid parameter sent. Please try again.</string>
+        <string name="api_error_token_not_found">Session token not found.</string>
+        <string name="api_error_token_empty">Session token has expired. Please select the category again.</string>
+        <string name="api_error_unknown_response_code">Unknown API response code received: %d</string>
+        <string name="api_error_generic">API Error: %1$d - %2$s</string>
+        <string name="api_error_404">Requested resource not found (404).</string>
+        <string name="api_error_500">A server error occurred (500). Please try again later.</string>
+        <string name="api_error_unexpected_server_code">An unexpected server error (%d). Please try again.</string>
+        <string name="network_error_connection">Network Connection Error. Check your internet or try again later.</string>
+        <string name="network_error_questions_generic">An unknown error occurred while fetching questions.</string>
+        <string name="network_error_categories_generic">An unknown error occurred while fetching categories.</string>
+        <string name="categories_server_response_failed">Category server response failed: Code %d</string>
+        <string name="categories_resource_not_found_404">Category resource not found (404).</string>
+        <string name="categories_server_error_500">Category server error (500).</string>
+        <string name="categories_unexpected_server_error_code">Unexpected server error fetching categories (%d).</string>
+        <string name="categories_network_error_fetch">Network Connection Error. Could not fetch categories.</string>
+
+
 </resources>

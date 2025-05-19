@@ -93,8 +93,8 @@ object DataModule {
 
     @Provides
     @Singleton
-    fun provideQuizRemoteDataSource(api: OpenTriviaApi): QuizRemoteDataSource {
-        return QuizRemoteDataSourceImpl(api)
+    fun provideQuizRemoteDataSource(@ApplicationContext context: Context,api: OpenTriviaApi): QuizRemoteDataSource {
+        return QuizRemoteDataSourceImpl(context, api)
     }
 
     @Provides
@@ -106,11 +106,12 @@ object DataModule {
     @Provides
     @Singleton
     fun provideQuizRepository(
+        @ApplicationContext context: Context,
         remoteDataSource: QuizRemoteDataSource,
         localDataSource: QuizLocalDataSource,
         networkMonitor: NetworkMonitor
     ): QuizRepository {
-        return QuizRepositoryImpl(remoteDataSource, localDataSource, networkMonitor)
+        return QuizRepositoryImpl(context, remoteDataSource, localDataSource, networkMonitor)
     }
 
     @Provides
