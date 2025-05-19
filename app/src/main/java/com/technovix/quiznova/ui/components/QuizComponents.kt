@@ -1,9 +1,11 @@
 package com.technovix.quiznova.ui.components
 
+import android.provider.CalendarContract.Colors
 import androidx.compose.animation.*
 import androidx.compose.animation.core.*
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.background
+import androidx.compose.foundation.border
 import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
@@ -20,9 +22,13 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.draw.scale
+import androidx.compose.ui.draw.shadow
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.RectangleShape
+import androidx.compose.ui.graphics.StrokeCap
 import androidx.compose.ui.graphics.vector.ImageVector
+import androidx.compose.ui.res.colorResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.semantics.Role
 import androidx.compose.ui.semantics.heading
@@ -52,13 +58,13 @@ fun ExitConfirmationDialog(
         title = { Text(stringResource(id = R.string.quiz_exit_dialog_title), fontWeight = FontWeight.Bold) },
         text = { Text(stringResource(id = R.string.quiz_exit_dialog_message)) },
         confirmButton = {
-            Button(
+            AppPrimaryButton (
                 onClick = onConfirm,
                 colors = ButtonDefaults.buttonColors(containerColor = MaterialTheme.colorScheme.error)
             ) { Text(stringResource(id = R.string.exit)) }
         },
         dismissButton = {
-            TextButton(onClick = onDismiss) {
+            AppTextButton (onClick = onDismiss) {
                 Text(stringResource(id = R.string.cancel), color = MaterialTheme.colorScheme.primary)
             }
         },
@@ -219,25 +225,12 @@ fun QuestionContent(
             // Buton aktifliği: Gönderildiyse veya bir cevap seçildiyse aktif
             val isEnabled = isSubmitted || uiState.selectedAnswer != null
 
-            Button(
+            AppPrimaryButton (
                 onClick = onClickAction,
                 enabled = isEnabled,
                 modifier = Modifier
                     .fillMaxWidth()
-                    .height(56.dp)
                     .padding(bottom = 16.dp, top = 8.dp), // Alt ve üst boşluk
-                shape = MaterialTheme.shapes.medium, // Tema şekli
-                elevation = ButtonDefaults.buttonElevation(
-                    defaultElevation = if(isEnabled) 4.dp else 0.dp,
-                    pressedElevation = 2.dp,
-                    disabledElevation = 0.dp
-                ),
-                colors = ButtonDefaults.buttonColors( // Tema renklerini kullan
-                    containerColor = MaterialTheme.colorScheme.primary,
-                    contentColor = MaterialTheme.colorScheme.onPrimary,
-                    disabledContainerColor = MaterialTheme.colorScheme.primary.copy(alpha = 0.5f),
-                    disabledContentColor = MaterialTheme.colorScheme.onPrimary.copy(alpha = 0.7f)
-                )
             ) {
                 Icon(buttonIcon, contentDescription = null, modifier = Modifier.size(ButtonDefaults.IconSize))
                 Spacer(Modifier.size(ButtonDefaults.IconSpacing))
@@ -390,30 +383,19 @@ fun AnswerOption(
 }
 
 
-// --- Quiz Sonuç Ekranı ---
+// --- Quiz Sonuç Ekranı (GÜNCELLENMİŞ) ---
+@OptIn(ExperimentalMaterial3Api::class) // Scaffold gibi bileşenler için gerekebilir
 @Composable
-fun QuizResultContent( // İsim değişikliği (isteğe bağlı)
+fun QuizResultContent( // İsim aynı kalıyor
     score: Int,
     totalQuestions: Int,
-    userAnswers: List<Pair<QuestionEntity, String?>>, // Kullanıcının cevapları ve sorular
+    userAnswers: List<Pair<QuestionEntity, String?>>,
     onRestart: () -> Unit,
     onBackToCategories: () -> Unit,
-    modifier: Modifier = Modifier
+    modifier: Modifier = Modifier // Dışarıdan modifier alabilmesi iyi bir pratik
 ) {
-    // Sonuç ekranı için yumuşak gradient arka plan
-    val resultGradient = Brush.verticalGradient(
-        colors = listOf(
-            MaterialTheme.colorScheme.background,
-            MaterialTheme.colorScheme.primaryContainer.copy(alpha = 0.15f),
-            MaterialTheme.colorScheme.secondaryContainer.copy(alpha = 0.10f),
-            MaterialTheme.colorScheme.background
-        )
-    )
+    val scorePercentage = if (totalQuestions > 0) score.toFloat() / totalQuestions.toFloat() else 0f
 
-    // Skor yüzdesi
-    val scorePercentage = if (totalQuestions > 0) score.toFloat() / totalQuestions else 0f
-
-    // remember içinde sadece kaynak ID'leri ve renk türünü hesapla (Composable çağrısı yok)
     val resultData = remember(scorePercentage) {
         when {
             scorePercentage == 1f -> Triple(R.string.quiz_result_perfect, R.raw.lottie_anim_score, ResultType.PERFECT)
@@ -424,193 +406,222 @@ fun QuizResultContent( // İsim değişikliği (isteğe bağlı)
     }
     val (resultMessageResId, lottieResId, resultType) = resultData
 
-    // Gerçek rengi Composable kapsamında al (MaterialTheme.colorScheme erişimi burada güvenli)
     val resultColor = when (resultType) {
-        ResultType.PERFECT -> HighlightYellow // Tema'dan al
-        ResultType.GREAT -> SuccessGreen     // Tema'dan al
-        ResultType.GOOD -> MaterialTheme.colorScheme.primary // Tema rengi
-        ResultType.BAD -> ErrorRed         // Tema'dan al
+        ResultType.PERFECT -> PositiveGreen // Tema'dan veya özel bir renk
+        ResultType.GREAT -> SuccessGreen
+        ResultType.GOOD -> MaterialTheme.colorScheme.primary
+        ResultType.BAD -> ErrorRed
     }
 
-    // Lottie animasyonunu yükle
-    val resultComposition by rememberLottieComposition(LottieCompositionSpec.RawRes(lottieResId))
-    // Skoru animasyonlu olarak göster
+    val resultLottieComposition by rememberLottieComposition(LottieCompositionSpec.RawRes(lottieResId))
     val animatedScore by animateIntAsState(
         targetValue = score,
         animationSpec = tween(1500, easing = FastOutSlowInEasing),
-        label="ScoreAnimation"
+        label = "ScoreAnimation"
+    )
+    val animatedProgress by animateFloatAsState(
+        targetValue = scorePercentage,
+        animationSpec = tween(1500, easing = FastOutSlowInEasing),
+        label = "ProgressAnimation"
     )
 
+    // Ekranın geneli için yumuşak bir gradient (isteğe bağlı, kaldırılabilir veya QuizScreen'e taşınabilir)
+    val screenBackground = Brush.verticalGradient(
+        colors = listOf(
+            MaterialTheme.colorScheme.surface.copy(alpha = 0.5f),
+            MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.2f),
+            MaterialTheme.colorScheme.surface.copy(alpha = 0.5f)
+        )
+    )
+
+    // Box yerine Column kullandık, çünkü QuizScreen'deki Scaffold zaten bir Box gibi davranıyor
+    // ve paddingleri yönetiyor. Arka planı QuizScreen'e taşıyabilirsiniz.
     Column(
-        modifier = modifier
+        modifier = modifier // Dışarıdan gelen modifier'ı uygula
             .fillMaxSize()
-            .background(resultGradient) // Gradient arka plan
-            .padding(horizontal = 20.dp, vertical = 24.dp), // İç boşluklar
+            // .background(screenBackground) // Bu arka planı QuizScreen'in Box'ına taşıyabilirsiniz
+            //.padding(16.dp)
+            .border(width = 2.dp, shape = RoundedCornerShape(size = 16.dp), color = MaterialTheme.colorScheme.onPrimaryContainer).padding(32.dp), // QuizScreen'den gelen padding'e ek olarak veya onun yerine
         horizontalAlignment = Alignment.CenterHorizontally
     ) {
-        // Üst Kısım: Lottie Animasyonu
-        LottieAnimation(
-            composition = resultComposition,
-            iterations = 1, // Tek sefer oyna
-            modifier = Modifier
-                .size(if (resultType == ResultType.PERFECT || resultType == ResultType.GREAT) 220.dp else 180.dp) // Başarıya göre boyut
-                .padding(top = 16.dp)
-        )
-        Spacer(modifier = Modifier.height(16.dp))
-
-        // Sonuç Mesajı
-        Text(
-            text = stringResource(id = resultMessageResId),
-            style = MaterialTheme.typography.headlineMedium,
-            fontWeight = FontWeight.Bold,
-            textAlign = TextAlign.Center,
-            color = resultColor // Sonuca göre renk
-        )
-        Spacer(modifier = Modifier.height(20.dp))
-
-        // Animasyonlu Skor Gösterimi
-        Row(verticalAlignment = Alignment.Bottom) {
+        // --- ÜST KISIM: Lottie, Mesaj ve Skor ---
+        Column(
+            horizontalAlignment = Alignment.CenterHorizontally,
+            modifier = Modifier.padding(bottom = 24.dp)
+        ) {
+            /*LottieAnimation(
+                composition = resultLottieComposition,
+                iterations = 1,
+                modifier = Modifier
+                    .size(if (resultType == ResultType.PERFECT || resultType == ResultType.GREAT) 180.dp else 150.dp)
+                    .padding(bottom = 16.dp)
+            )*/
             Text(
-                text = "$animatedScore",
-                style = MaterialTheme.typography.displayLarge, // Büyük skor rakamı
+                text = stringResource(id = resultMessageResId),
+                style = MaterialTheme.typography.headlineMedium,
                 fontWeight = FontWeight.Bold,
+                textAlign = TextAlign.Center,
                 color = resultColor
             )
-            Text(
-                text = "/$totalQuestions",
-                style = MaterialTheme.typography.headlineMedium,
-                fontWeight = FontWeight.Normal,
-                color = MaterialTheme.colorScheme.onSurfaceVariant,
-                modifier = Modifier.padding(start = 6.dp, bottom = 6.dp) // Hizalama
-            )
+            Spacer(modifier = Modifier.height(12.dp))
+
+            // Skor ve Dairesel İlerleme Göstergesi
+            Box(contentAlignment = Alignment.Center) {
+                CircularProgressIndicator(
+                    progress = { animatedProgress },
+                    modifier = Modifier.size(100.dp),
+                    color = resultColor,
+                    strokeWidth = 8.dp,
+                    trackColor = MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.5f),
+                    strokeCap = StrokeCap.Round
+                )
+                Row(verticalAlignment = Alignment.CenterVertically) {
+                    Text(
+                        text = "$animatedScore",
+                        style = MaterialTheme.typography.headlineLarge.copy(fontSize = 36.sp),
+                        fontWeight = FontWeight.ExtraBold,
+                        color = resultColor
+                    )
+                    Text(
+                        text = "/$totalQuestions",
+                        style = MaterialTheme.typography.titleMedium,
+                        fontWeight = FontWeight.Medium,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant,
+                        modifier = Modifier.padding(start = 4.dp, bottom = 4.dp)
+                    )
+                }
+            }
         }
-        Spacer(modifier = Modifier.height(32.dp)) // Özet öncesi boşluk
 
-        // Orta Kısım: Cevap Özeti
+        // --- ORTA KISIM: Cevap Özeti Başlığı ---
         Text(
-            stringResource(R.string.quiz_result_summary), // Başlık
-            style = MaterialTheme.typography.titleMedium,
-            fontWeight = FontWeight.Bold,
-            color = MaterialTheme.colorScheme.onSurfaceVariant,
-            modifier = Modifier.semantics { heading() }
+            stringResource(R.string.quiz_result_summary),
+            style = MaterialTheme.typography.titleLarge,
+            fontWeight = FontWeight.SemiBold,
+            color = MaterialTheme.colorScheme.onSurface,
+            modifier = Modifier.padding(bottom = 12.dp)
         )
-        Spacer(modifier = Modifier.height(12.dp))
 
-        // Kaydırılabilir Cevap Listesi
+        // --- CEVAP LİSTESİ (Kartlar İçinde) ---
         LazyColumn(
-            modifier = Modifier
-                .weight(1f) // Kalan alanı doldur
-                .fillMaxWidth()
-                .clip(MaterialTheme.shapes.medium) // Yuvarlak köşeler
-                .background(
-                    MaterialTheme.colorScheme
-                        .surfaceColorAtElevation(1.dp)
-                        .copy(alpha = 0.5f)
-                ) // Hafif arka plan
-                .padding(vertical = 8.dp)
+            modifier = Modifier.weight(1f),
+            verticalArrangement = Arrangement.spacedBy(12.dp)
         ) {
             itemsIndexed(
                 items = userAnswers,
-                key = { index, item -> "${item.first.id}-$index" } // Performans için anahtar
+                key = { index, item -> "${item.first.id}-$index" }
             ) { index, (question, userAnswer) ->
-                val isCorrect = userAnswer == question.correctAnswer
-                // Her bir cevap özeti satırı
-                Row(
-                    verticalAlignment = Alignment.Top,
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .padding(horizontal = 16.dp, vertical = 12.dp)
-                ) {
-                    // Doğru/Yanlış ikonu
-                    val correctnessDesc = if (isCorrect) stringResource(R.string.cd_correct_answer) else
-                        stringResource(R.string.cd_incorrect_answer)
-                    Icon(
-                        imageVector = if(isCorrect) Icons.Filled.CheckCircle else Icons.Filled.Cancel,
-                        contentDescription = correctnessDesc,
-                        tint = if(isCorrect) SuccessGreen else ErrorRed,
-                        modifier = Modifier
-                            .size(22.dp)
-                            .padding(top = 2.dp) // Metinle hizalama
-                    )
-                    Spacer(modifier = Modifier.width(12.dp))
-                    // Soru ve Cevap Metinleri
-                    Column(modifier = Modifier.weight(1f)) {
-                        Text( // Soru
-                            text = "${index + 1}. ${question.question}",
-                            style = MaterialTheme.typography.bodyLarge,
-                            fontWeight = FontWeight.Medium,
-                            maxLines = 3,
-                            overflow = TextOverflow.Ellipsis,
-                            color = MaterialTheme.colorScheme.onSurface
-                        )
-                        Spacer(modifier = Modifier.height(6.dp))
-                        Text( // Kullanıcının Cevabı
-                            text = stringResource(R.string.quiz_result_your_answer, userAnswer ?: "-"),
-                            style = MaterialTheme.typography.bodyMedium,
-                            color = if(isCorrect) SuccessGreen else ErrorRed, // Renkli vurgu
-                            maxLines = 2,
-                            overflow = TextOverflow.Ellipsis,
-                            fontWeight = FontWeight.SemiBold
-                        )
-                        if (!isCorrect) { // Yanlışsa doğru cevabı göster
-                            Spacer(modifier = Modifier.height(4.dp))
-                            Text( // Doğru Cevap
-                                text = stringResource(R.string.quiz_result_correct_answer, question.correctAnswer),
-                                style = MaterialTheme.typography.bodyMedium,
-                                color = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.8f),
-                                maxLines = 2,
-                                overflow = TextOverflow.Ellipsis
-                            )
-                        }
-                    }
-                }
-                // Ayırıcı Çizgi
-                if(index < userAnswers.size - 1) {
-                    HorizontalDivider(
-                        modifier = Modifier.padding(horizontal = 16.dp, vertical = 8.dp),
-                        thickness = 0.5.dp,
-                        color = MaterialTheme.colorScheme.outline.copy(alpha=0.3f)
-                    )
-                }
+                AnswerSummaryItemCard( // Bu yardımcı Composable'ı da aynı dosyada veya ui.components altında tutun
+                    questionNumber = index + 1,
+                    questionText = question.question,
+                    userAnswerText = userAnswer ?: stringResource(R.string.quiz_question_progress),
+                    correctAnswerText = question.correctAnswer,
+                    isCorrect = userAnswer == question.correctAnswer
+                )
             }
-        } // End LazyColumn
-        Spacer(modifier = Modifier.height(24.dp)) // Butonlar öncesi boşluk
+        }
+        Spacer(modifier = Modifier.height(24.dp))
 
-        // Alt Kısım: Butonlar
+        // --- ALT KISIM: Butonlar ---
         Row(
             modifier = Modifier.fillMaxWidth(),
-            horizontalArrangement = Arrangement.spacedBy(16.dp) // Buton arası boşluk
+            horizontalArrangement = Arrangement.spacedBy(16.dp)
         ) {
-            // Kategorilere Dön Butonu (Kenarlıklı)
-            OutlinedButton(
+            AppSecondaryButton( // Kendi özel butonunuzu kullanın
                 onClick = onBackToCategories,
-                modifier = Modifier
-                    .weight(1f)
-                    .height(52.dp),
-                shape = MaterialTheme.shapes.medium,
-                border = BorderStroke(1.dp, MaterialTheme.colorScheme.outline)
+                modifier = Modifier.weight(1.15f)
             ) {
                 Icon(Icons.Filled.ListAlt, contentDescription = null)
                 Spacer(Modifier.size(ButtonDefaults.IconSpacing))
-                Text(stringResource(R.string.quiz_result_back_to_categories), fontWeight = FontWeight.Medium)
+                Text(stringResource(R.string.quiz_result_back_to_categories))
             }
-            // Tekrar Oyna Butonu (Dolgulu)
-            Button(
+            AppPrimaryButton( // Kendi özel butonunuzu kullanın
                 onClick = onRestart,
-                modifier = Modifier
-                    .weight(1f)
-                    .height(52.dp),
-                shape = MaterialTheme.shapes.medium,
-                elevation = ButtonDefaults.buttonElevation(defaultElevation = 4.dp),
-                colors = ButtonDefaults.buttonColors(containerColor = MaterialTheme.colorScheme.primary)
+                modifier = Modifier.weight(1f)
             ) {
                 Icon(Icons.Filled.Replay, contentDescription = null)
                 Spacer(Modifier.size(ButtonDefaults.IconSpacing))
-                Text(stringResource(R.string.quiz_result_play_again), fontWeight = FontWeight.Bold)
+                Text(stringResource(R.string.quiz_result_play_again))
             }
-        } // End Row (Butonlar)
-    } // End Column (QuizResultContent)
+        }
+    }
 }
+
+// --- CEVAP ÖZETİ SATIRI İÇİN KART (Yardımcı Composable) ---
+// Bu fonksiyonu da QuizResultContent ile aynı dosyaya veya
+// genel ui.components altına taşıyabilirsiniz.
+@Composable
+fun AnswerSummaryItemCard(
+    questionNumber: Int,
+    questionText: String,
+    userAnswerText: String,
+    correctAnswerText: String,
+    isCorrect: Boolean
+) {
+    val cardColor = if (isCorrect) SuccessGreen.copy(alpha = 0.1f) else ErrorRed.copy(alpha = 0.1f)
+    val icon = if (isCorrect) Icons.Filled.CheckCircle else Icons.Filled.Cancel
+    val iconColor = if (isCorrect) SuccessGreen else ErrorRed
+
+    Card(
+        modifier = Modifier
+            .fillMaxWidth()
+            .shadow(elevation = 2.dp, shape = MaterialTheme.shapes.medium, ambientColor = iconColor.copy(alpha = 0.3f)),
+        shape = MaterialTheme.shapes.medium,
+        colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface),
+        border = BorderStroke(1.dp, cardColor)
+    ) {
+        Row(
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(horizontal = 16.dp, vertical = 12.dp),
+            verticalAlignment = Alignment.Top
+        ) {
+            Icon(
+                imageVector = icon,
+                contentDescription = if (isCorrect) stringResource(R.string.cd_correct_answer) else stringResource(R.string.cd_incorrect_answer),
+                tint = iconColor,
+                modifier = Modifier.padding(top = 2.dp)
+            )
+            Spacer(modifier = Modifier.width(12.dp))
+            Column(modifier = Modifier.weight(1f)) {
+                Text(
+                    text = "$questionNumber. $questionText",
+                    style = MaterialTheme.typography.bodyLarge,
+                    fontWeight = FontWeight.Medium,
+                    maxLines = 2,
+                    overflow = TextOverflow.Ellipsis,
+                    color = MaterialTheme.colorScheme.onSurface
+                )
+                Spacer(modifier = Modifier.height(6.dp))
+                Text(
+                    text = stringResource(R.string.quiz_result_your_answer, userAnswerText),
+                    style = MaterialTheme.typography.bodyMedium,
+                    color = if (isCorrect) MaterialTheme.colorScheme.onSurfaceVariant else iconColor,
+                    fontWeight = if (!isCorrect) FontWeight.Bold else FontWeight.Normal,
+                    maxLines = 1,
+                    overflow = TextOverflow.Ellipsis
+                )
+                if (!isCorrect) {
+                    Spacer(modifier = Modifier.height(4.dp))
+                    Text(
+                        text = stringResource(R.string.quiz_result_correct_answer, correctAnswerText),
+                        style = MaterialTheme.typography.bodyMedium,
+                        color = SuccessGreen,
+                        fontWeight = FontWeight.SemiBold,
+                        maxLines = 1,
+                        overflow = TextOverflow.Ellipsis
+                    )
+                }
+            }
+        }
+    }
+}
+
+// Gerekli Enum (Eğer henüz yoksa veya farklı bir yerdeyse)
+// enum class ResultType { PERFECT, GREAT, GOOD, BAD }
+
+// Gerekli Tema Renkleri (Eğer henüz yoksa theme/Color.kt içinde)
+// val PositiveGreen = Color(0xFF3DD598)
 
 
 // --- Yükleme Animasyonu ---
@@ -663,7 +674,7 @@ fun EmptyQuestionsView(modifier: Modifier = Modifier, onBack: () -> Unit) {
         )
         Spacer(modifier = Modifier.height(32.dp))
         // Geri dönme butonu
-        Button(onClick = onBack) {
+        AppSecondaryButton (onClick = onBack) {
             Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = null)
             Spacer(Modifier.size(ButtonDefaults.IconSpacing))
             Text(stringResource(R.string.back))
@@ -701,14 +712,8 @@ fun ErrorViewQuiz(message: String, onRetry: () -> Unit, modifier: Modifier = Mod
             color = MaterialTheme.colorScheme.onSurfaceVariant // Yardımcı metin rengi
         )
         Spacer(modifier = Modifier.height(40.dp)) // Buton öncesi boşluk
-        Button( // Tekrar Dene Butonu
-            onClick = onRetry,
-            shape = MaterialTheme.shapes.medium,
-            colors = ButtonDefaults.buttonColors(
-                containerColor = MaterialTheme.colorScheme.primary,
-                contentColor = MaterialTheme.colorScheme.onPrimary
-            ),
-            contentPadding = PaddingValues(horizontal = 32.dp, vertical = 12.dp) // Daha geniş buton
+        AppPrimaryButton ( // Tekrar Dene Butonu
+            onClick = onRetry
         ) {
             Icon(Icons.Filled.Refresh, contentDescription = null) // Yenile ikonu
             Spacer(Modifier.size(ButtonDefaults.IconSpacing))

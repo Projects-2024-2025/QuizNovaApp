@@ -9,6 +9,7 @@
     <string name="exit">Exit</string>
     <string name="cancel">Cancel</string>
     <string name="error_unknown">An unknown error occurred.</string>
+
     <string name="quiz_next_question">Next Question</string>
     <string name="quiz_finish">Finish</string>
     <string name="quiz_submit_answer">Submit Answer</string>
@@ -24,6 +25,7 @@
     <string name="retry">Retry</string>
     <string name="error_oops">Oops!</string>
     <string name="score_display">Score: %1$d / %2$d</string>
+
     <string name="welcome_message">Welcome, %1$s!</string>
     <string name="category_screen_title">Categories</string>
     <string name="cd_more_options">More Options</string>
@@ -47,7 +49,9 @@
     <string name="quiz_result_your_answer">Your Answer: %1$s</string>
     <string name="quiz_result_correct_answer">Correct Answer: %1$s</string>
     <string name="start_quiz_button_short">Start %1$s</string> <!-- Shorter text for carousel button -->
-    <!-- NEWLY ADDED STRINGS -->
+
+
+
     <string name="menu_theme_mode">Theme Mode</string>
     <string name="theme_light">Light Theme</string>
     <string name="theme_dark">Dark Theme</string>
