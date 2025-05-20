@@ -15,4 +15,5 @@ sealed class Screen(val route: String) {
     }
     object Settings : Screen("settings") // Settings screen route
     object About : Screen("about") // About screen route
+    object PrivacyPolicy: Screen("privacy_policy") // Privacy Policy screen route
 }

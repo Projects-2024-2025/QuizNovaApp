@@ -51,7 +51,7 @@ fun CategoryScreen(
     val categoriesState by viewModel.categories.collectAsState()
     var showMenu by remember { mutableStateOf(false) }
     val context = LocalContext.current
-    val privacyPolicyUrl = stringResource(R.string.url_privacy_policy)
+    //val privacyPolicyUrl = stringResource(R.string.url_privacy_policy)
     var isGridViewVisible by remember { mutableStateOf(true) } // Grid ile başla
     val zoomOutThreshold = 0.85f
     val zoomInThreshold = 1.15f
@@ -114,22 +114,18 @@ fun CategoryScreen(
                             )
                             HorizontalDivider(modifier = Modifier.padding(vertical = 4.dp))
                             DropdownMenuItem(
-                                text = { Text(stringResource(R.string.menu_privacy_policy)) },
-                                onClick = {
-                                    try {
-                                        context.startActivity(Intent(Intent.ACTION_VIEW, Uri.parse(privacyPolicyUrl)))
-                                    } catch (e: Exception) {
-                                        Log.e("CategoryScreen", "URL Açılamadı: $privacyPolicyUrl", e)
-                                    }
-                                    showMenu = false
-                                },
-                                leadingIcon = { Icon(Icons.Default.Policy, null, tint = MaterialTheme.colorScheme.secondary) }
-                            )
-                            DropdownMenuItem(
                                 text = { Text(stringResource(R.string.menu_about)) },
                                 onClick = { navController.navigate(Screen.About.route)
                                     showMenu = false },
                                 leadingIcon = { Icon(Icons.Default.Info, null, tint = MaterialTheme.colorScheme.tertiary) }
+                            )
+                            DropdownMenuItem(
+                                text = { Text(stringResource(R.string.menu_privacy_policy)) },
+                                onClick = {
+                                    navController.navigate(Screen.PrivacyPolicy.route) // <<<--- DEĞİŞTİRİLDİ
+                                    showMenu = false
+                                },
+                                leadingIcon = { Icon(Icons.Default.Policy, null, tint = MaterialTheme.colorScheme.secondary) }
                             )
                         }
                     }

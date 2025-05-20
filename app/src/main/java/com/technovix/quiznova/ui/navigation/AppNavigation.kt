@@ -11,6 +11,7 @@ import androidx.navigation.compose.rememberNavController
 import androidx.navigation.navArgument
 import com.technovix.quiznova.ui.screen.about.AboutScreen
 import com.technovix.quiznova.ui.screen.category.CategoryScreen
+import com.technovix.quiznova.ui.screen.privacypolicy.PrivacyPolicyScreen
 import com.technovix.quiznova.ui.screen.quiz.QuizScreen
 import com.technovix.quiznova.ui.screen.settings.SettingsScreen
 import com.technovix.quiznova.util.ThemePreference
@@ -83,6 +84,11 @@ fun AppNavigation(
         // About Screen
         composable(Screen.About.route) {
             AboutScreen(navController = navController)
+        }
+
+        // Privacy Policy Screen
+        composable(Screen.PrivacyPolicy.route) {
+            PrivacyPolicyScreen(navController = navController)
         }
     }
 }

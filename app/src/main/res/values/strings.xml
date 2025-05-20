@@ -96,5 +96,28 @@
         <string name="categories_unexpected_server_error_code">Unexpected server error fetching categories (%d).</string>
         <string name="categories_network_error_fetch">Network Connection Error. Could not fetch categories.</string>
 
-
+    <string name="privacy_policy_title">Privacy Policy</string>
+    <string name="privacy_policy_text">
+    <![CDATA[
+    <b>Your Privacy Matters</b><br/><br/>
+    QuizNova (\"we,\" \"us,\" or \"our\") operates the QuizNova mobile application (the \"Service\").
+    This page informs you of our policies regarding the collection, use, and disclosure of personal data when you use our Service and the choices you have associated with that data.
+    <br/><br/>
+    <b>Information Collection and Use</b><br/>
+    We do not collect any personally identifiable information from users of QuizNova. The app functions locally on your device and does not require you to submit personal data.
+    <br/><br/>
+    <b>Quiz Data</b><br/>
+    Quiz questions and categories are fetched from the Open Trivia Database (https://opentdb.com). Your quiz progress and scores are stored locally on your device and are not transmitted to us or any third parties.
+    <br/><br/>
+    <b>Third-Party Services</b><br/>
+    The app may display advertisements through Google AdMob. AdMob may collect anonymous data for ad personalization. Please refer to Google\'s Privacy & Terms for more information on how Google uses data when you use our partners\' sites or apps.
+    <br/><br/>
+    <b>Changes to This Privacy Policy</b><br/>
+    We may update our Privacy Policy from time to time. We will notify you of any changes by posting the new Privacy Policy on this page.
+    You are advised to review this Privacy Policy periodically for any changes. Changes to this Privacy Policy are effective when they are posted on this page.
+    <br/><br/>
+    <b>Contact Us</b><br/>
+    If you have any questions about this Privacy Policy, please contact us at: your.email@example.com
+    ]]>
+    </string>
 </resources>
