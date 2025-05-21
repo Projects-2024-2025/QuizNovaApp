@@ -6,11 +6,15 @@ import androidx.activity.compose.setContent
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.core.view.WindowCompat
+import com.google.android.gms.ads.MobileAds
 import com.technovix.quiznova.data.datastore.ThemeSettingsRepository
 import com.technovix.quiznova.ui.navigation.AppNavigation
 import com.technovix.quiznova.util.ThemePreference
 import com.technovix.quiznova.ui.theme.QuizAppTheme
 import dagger.hilt.android.AndroidEntryPoint
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.launch
 import javax.inject.Inject
 
 @AndroidEntryPoint
@@ -20,6 +24,10 @@ class MainActivity : ComponentActivity() {
     lateinit var themeSettingsRepository: ThemeSettingsRepository
 
     override fun onCreate(savedInstanceState: Bundle?) {
+        CoroutineScope(Dispatchers.IO).launch {
+            // Initialize the Google Mobile Ads SDK on a background thread.
+            MobileAds.initialize(this@MainActivity) {}
+        }
         super.onCreate(savedInstanceState)
         WindowCompat.setDecorFitsSystemWindows(window, false) // For edge-to-edge UI.
 

@@ -1,10 +1,17 @@
 package com.technovix.quiznova.ui.viewmodel
 
+import android.app.Activity
+import android.app.Application
+import android.util.Log
 import androidx.lifecycle.SavedStateHandle
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import android.text.Html
-import androidx.core.text.HtmlCompat
+import com.google.android.gms.ads.AdError
+import com.google.android.gms.ads.AdRequest
+import com.google.android.gms.ads.FullScreenContentCallback
+import com.google.android.gms.ads.LoadAdError
+import com.google.android.gms.ads.interstitial.InterstitialAd
+import com.google.android.gms.ads.interstitial.InterstitialAdLoadCallback
 import com.technovix.quiznova.data.local.entity.QuestionEntity
 import com.technovix.quiznova.data.repository.QuizRepository
 import com.technovix.quiznova.util.HtmlDecoder
@@ -12,6 +19,8 @@ import com.technovix.quiznova.util.Resource
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.*
 import kotlinx.coroutines.launch
+import timber.log.Timber // Eğer Timber kullanıyorsanız
+// import android.util.Log // Eğer Timber kullanmıyorsanız
 import javax.inject.Inject
 
 data class QuizUiState(
@@ -27,8 +36,9 @@ data class QuizUiState(
 @HiltViewModel
 class QuizViewModel @Inject constructor(
     private val repository: QuizRepository,
-    private  val savedStateHandle: SavedStateHandle,
-    private val htmlDecoder: HtmlDecoder
+    private val savedStateHandle: SavedStateHandle,
+    val htmlDecoder: HtmlDecoder, // PrivacyPolicyScreen için public bırakılabilir veya ayrı çözüm
+    private val application: Application // Context için
 ) : ViewModel() {
 
     companion object {
@@ -38,54 +48,114 @@ class QuizViewModel @Inject constructor(
         const val SCORE_KEY = "score"
         const val IS_SUBMITTED_KEY = "isAnswerSubmitted"
         const val IS_FINISHED_KEY = "isQuizFinished"
-        // userAnswers'ı kaydetmek biraz daha karmaşık, şimdilik diğerlerini yapalım
-        // private const val USER_ANSWERS_KEY = "userAnswers"
+        // private const val USER_ANSWERS_KEY = "userAnswers" // Daha karmaşık
     }
 
     private val categoryId: Int = savedStateHandle.get<Int>(CATEGORY_ID_KEY) ?: 0
     private val categoryName: String = savedStateHandle.get<String>(CATEGORY_NAME_KEY) ?: "Unknown"
-    private val questionAmount = 10
+    private val questionAmount = 10 // Kaç soru çekileceği
 
-    //Durumu başlatma (SavedState'den geri yükleme)
     private val _uiState = MutableStateFlow(QuizUiState(
         currentQuestionIndex = savedStateHandle.get<Int>(CURRENT_INDEX_KEY) ?: 0,
         score = savedStateHandle.get<Int>(SCORE_KEY) ?: 0,
-        // isAnswerSubmitted'ı direkt yüklememek daha iyi olabilir, çünkü soru değişince sıfırlanıyor.
-        // Ama quiz bittiyse yükleyebiliriz.
         isAnswerSubmitted = savedStateHandle.get<Boolean>(IS_SUBMITTED_KEY) ?: false,
         isQuizFinished = savedStateHandle.get<Boolean>(IS_FINISHED_KEY) ?: false
-        // userAnswers'ı şimdilik yüklemiyoruz
     ))
     val uiState: StateFlow<QuizUiState> = _uiState.asStateFlow()
 
+    // --- REKLAM İÇİN EKLENENLER ---
+    private var mInterstitialAd: InterstitialAd? = null
+    // TEST İÇİN BU ID KULLANILIR. Play Store'a yüklerken KENDİ AD UNIT ID'NİZİ KULLANIN!
+    private val AD_UNIT_ID = "ca-app-pub-3940256099942544/1033173712"
+
+    private fun loadInterstitialAd() {
+        if (mInterstitialAd != null) {
+            Timber.d("Interstitial Ad is already loaded or currently loading.")
+            // Log.d("QuizViewModel", "Interstitial Ad is already loaded or currently loading.")
+            return
+        }
+        Timber.d("Loading Interstitial Ad...")
+        // Log.d("QuizViewModel", "Loading Interstitial Ad...")
+        val adRequest = AdRequest.Builder().build()
+        InterstitialAd.load(
+            application.applicationContext, // Application context
+            AD_UNIT_ID,
+            adRequest,
+            object : InterstitialAdLoadCallback() {
+                override fun onAdLoaded(interstitialAd: InterstitialAd) {
+                    Timber.d("Interstitial Ad was loaded.")
+                     Log.d("QuizViewModel", "Interstitial Ad was loaded.")
+                    mInterstitialAd = interstitialAd
+                }
+
+                override fun onAdFailedToLoad(loadAdError: LoadAdError) {
+                    Timber.d("Interstitial Ad failed to load: ${loadAdError.message}")
+                     Log.d("QuizViewModel", "Interstitial Ad failed to load: ${loadAdError.message}")
+                    mInterstitialAd = null
+                }
+            }
+        )
+    }
+
+    fun showInterstitialAd(activity: Activity, onAdDismissed: () -> Unit) {
+        if (mInterstitialAd != null) {
+            mInterstitialAd?.fullScreenContentCallback = object : FullScreenContentCallback() {
+                override fun onAdDismissedFullScreenContent() {
+                    Timber.d("Ad was dismissed.")
+                    // Log.d("QuizViewModel", "Ad was dismissed.")
+                    mInterstitialAd = null // Reklamı bir kere gösterdikten sonra null yap
+                    onAdDismissed()      // Asıl navigasyon işlemini yap
+                }
+
+                override fun onAdFailedToShowFullScreenContent(adError: AdError) {
+                    Timber.d("Ad failed to show: ${adError.message}")
+                    // Log.d("QuizViewModel", "Ad failed to show: ${adError.message}")
+                    mInterstitialAd = null
+                    onAdDismissed()      // Hata olsa bile navigasyonu yap
+                }
+
+                override fun onAdShowedFullScreenContent() {
+                    Timber.d("Ad showed fullscreen content.")
+                     Log.d("QuizViewModel", "Ad showed fullscreen content.")
+                    // İsteğe bağlı: Reklam gösterildikten sonra hemen yenisini yüklemeye başla
+                    // loadInterstitialAd()
+                }
+            }
+            Timber.d("Showing Interstitial Ad.")
+             Log.d("QuizViewModel", "Showing Interstitial Ad.")
+            mInterstitialAd?.show(activity)
+        } else {
+            Timber.d("Interstitial ad not ready. Proceeding with navigation.")
+            Log.d("QuizViewModel", "Interstitial ad not ready. Proceeding with navigation.")
+            onAdDismissed() // Reklam hazır değilse direkt navigasyonu yap
+        }
+    }
+    // --- REKLAM İÇİN EKLENENLER BİTTİ ---
+
     init {
-        // Eğer quiz bitmemişse ve sorular henüz yüklenmemişse soruları yükle.
-        // Eğer quiz bitmişse (isQuizFinished true ise) tekrar yüklemeye gerek yok.
         if (uiState.value.questions !is Resource.Success && !uiState.value.isQuizFinished) {
             loadQuestions()
         } else if (uiState.value.isQuizFinished) {
-            // Quiz zaten bitmiş, belki sadece sonuçları göstermek yeterli
-            // VEYA Kullanıcı geçmiş sonuçları görsün isteniyorsa soruları tekrar yükleyebiliriz
-            // Şimdilik bitmişse bir şey yapmayalım, UI zaten sonuç ekranını gösterir.
-            // Eğer `userAnswers`'ı da kaydedip yükleseydik, burada onu da yüklerdik.
-            println("QuizViewModel: Quiz zaten bitmiş durumda, soru yüklenmiyor.")
+            Timber.d("QuizViewModel: Quiz was already finished. Loading ad for potential restart/new nav.")
+            // Log.d("QuizViewModel", "QuizViewModel: Quiz was already finished. Loading ad for potential restart/new nav.")
+            loadInterstitialAd() // Eğer ViewModel yeniden oluştuğunda quiz bitmişse reklam yükle
         }
-
     }
 
     private fun loadQuestions() {
         viewModelScope.launch {
             _uiState.update { it.copy(questions = Resource.Loading()) }
-
             repository.getQuestions(categoryId, categoryName, questionAmount)
                 .collect { result ->
-                    // Gelen sonucu işle ve decode et
                     val processedResult = when (result) {
                         is Resource.Success -> {
                             val decodedQuestions = decodeQuestionEntities(result.data ?: emptyList())
                             Resource.Success(decodedQuestions)
                         }
-                        is Resource.Error -> Resource.Error(result.message ?: "Bilinmeyen hata", decodeQuestionEntities(result.data ?: emptyList())) // Hata durumunda bile varsa veriyi decode et
+                        is Resource.Error -> Resource.Error(
+                            result.message ?: "Bilinmeyen hata",
+                            decodeQuestionEntities(result.data ?: emptyList())
+                        )
                         is Resource.Loading -> Resource.Loading()
                     }
                     _uiState.update { currentState ->
@@ -95,23 +165,15 @@ class QuizViewModel @Inject constructor(
         }
     }
 
-    // HTML decode işlemini yapan yardımcı fonksiyon
     private fun decodeQuestionEntities(entities: List<QuestionEntity>): List<QuestionEntity> {
         return entities.map { entity ->
-            entity.copy( // copy() ile yeni bir nesne oluştur, orijinali değiştirme
-                question = decodeHtml(entity.question),
-                correctAnswer = decodeHtml(entity.correctAnswer),
-                incorrectAnswers = entity.incorrectAnswers.map { decodeHtml(it) },
-                // allAnswers'ı da decode etmeliyiz
-                allAnswers = entity.allAnswers.map { decodeHtml(it) }
+            entity.copy(
+                question = htmlDecoder.decode(entity.question),
+                correctAnswer = htmlDecoder.decode(entity.correctAnswer),
+                incorrectAnswers = entity.incorrectAnswers.map { htmlDecoder.decode(it) },
+                allAnswers = entity.allAnswers.map { htmlDecoder.decode(it) }
             )
         }
-    }
-
-    // Tek bir string'i decode eden fonksiyon
-    private fun decodeHtml(html: String): String {
-        // HtmlCompat daha modern ve güvenli bir alternatiftir
-        return htmlDecoder.decode(html)
     }
 
     fun onAnswerSelected(answer: String) {
@@ -131,12 +193,11 @@ class QuizViewModel @Inject constructor(
 
         _uiState.update {
             it.copy(
-                score = if (isCorrect) it.score + 1 else it.score,
+                score = newScore,
                 isAnswerSubmitted = true,
                 userAnswers = it.userAnswers + (currentQuestion to it.selectedAnswer)
             )
         }
-        // --- Durumu SavedStateHandle'a Kaydet ---
         savedStateHandle[SCORE_KEY] = newScore
         savedStateHandle[IS_SUBMITTED_KEY] = true
     }
@@ -147,51 +208,40 @@ class QuizViewModel @Inject constructor(
         val nextIndex = currentState.currentQuestionIndex + 1
 
         if (nextIndex < questions.size) {
-            val newIndex = currentState.currentQuestionIndex + 1
             _uiState.update {
                 it.copy(
-                    currentQuestionIndex = it.currentQuestionIndex + 1,
+                    currentQuestionIndex = nextIndex,
                     selectedAnswer = null,
                     isAnswerSubmitted = false
                 )
             }
-            savedStateHandle[CURRENT_INDEX_KEY] = newIndex
+            savedStateHandle[CURRENT_INDEX_KEY] = nextIndex
             savedStateHandle[IS_SUBMITTED_KEY] = false
         } else {
+            // Quiz bitti
             _uiState.update { it.copy(isQuizFinished = true, isAnswerSubmitted = false) }
             savedStateHandle[IS_FINISHED_KEY] = true
             savedStateHandle[IS_SUBMITTED_KEY] = false
-
+            loadInterstitialAd() // QUIZ BİTTİĞİNDE REKLAMI YÜKLE
         }
     }
 
     fun restartQuiz() {
-        // ViewModel state'ini BAŞLANGIÇ durumuna sıfırla
         _uiState.value = QuizUiState() // Tüm değerleri sıfırla
-        // SavedStateHandle'daki değerleri de temizle (önemli!)
         savedStateHandle.remove<Int>(CURRENT_INDEX_KEY)
         savedStateHandle.remove<Int>(SCORE_KEY)
         savedStateHandle.remove<Boolean>(IS_SUBMITTED_KEY)
         savedStateHandle.remove<Boolean>(IS_FINISHED_KEY)
-        loadQuestions()
+        // userAnswers'ı da temizlemek isterseniz:
+        // _uiState.update { it.copy(userAnswers = emptyList()) }
+        // Veya QuizUiState() zaten boş liste ile başlıyor.
+
+        loadQuestions() // Soruları yeniden yükle
+        // "Tekrar Oyna"ya basıldığında, bir sonraki quiz bittiğinde gösterilecek reklamı yüklemeye başla.
+        loadInterstitialAd()
     }
 
     fun retryLoadQuestions() {
         loadQuestions()
     }
-
-    // --- UserAnswers Kaydetme (İsteğe Bağlı - Daha Karmaşık) ---
-    // `userAnswers: List<Pair<QuestionEntity, String?>>` listesini doğrudan SavedStateHandle'a
-    // kaydetmek zordur çünkü QuestionEntity Parcelable veya Serializable değil ve büyük olabilir.
-    // Olası Çözümler:
-    // 1. Sadece Cevapları Kaydet: `List<String?>` olarak sadece kullanıcının verdiği cevapları
-    //    (veya null) index sırasına göre kaydedebilirsiniz. Sonuç ekranında soruları tekrar
-    //    yükleyip bu cevaplarla eşleştirirsiniz. Bu en basit yol.
-    // 2. ID ve Cevapları Kaydet: `List<Pair<Int, String?>>` olarak soru ID'si ve cevabı
-    //    kaydedebilirsiniz. Yine soruları yükleyip ID ile eşleştirirsiniz.
-    // 3. Serileştirme: QuestionEntity'yi Serializable yapabilir veya GSON/Moshi ile JSON String'e
-    //    çevirip kaydedebilirsiniz. Ama SavedStateHandle'ın boyut limiti olabilir ve performans
-    //    etkilenebilir. Genellikle kaçınılır.
-    // ŞİMDİLİK BU ADIMI ATLAYALIM. Kullanıcı uygulamayı kapatırsa sonuç özetini göremez
-    // ama en azından kaldığı yerden devam edebilir veya skoru korunur.
 }

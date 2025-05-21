@@ -156,7 +156,8 @@ dependencies {
     debugImplementation(libs.androidx.ui.tooling) // Preview vb.
     debugImplementation(libs.androidx.ui.test.manifest) // Test Manifest
 
-
+    //Admob
+    implementation("com.google.android.gms:play-services-ads:23.1.0")
 
     // Test Hilt
     //testImplementation("com.google.dagger:hilt-android-testing:2.51")

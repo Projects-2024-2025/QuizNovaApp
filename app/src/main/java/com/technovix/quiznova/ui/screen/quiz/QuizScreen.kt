@@ -1,10 +1,10 @@
 package com.technovix.quiznova.ui.screen.quiz
 
+import android.app.Activity
 import androidx.activity.compose.BackHandler
 import androidx.compose.animation.*
 import androidx.compose.animation.core.*
 import androidx.compose.foundation.background
-import androidx.compose.foundation.isSystemInDarkTheme
 import androidx.compose.foundation.layout.*
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
@@ -13,6 +13,7 @@ import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
@@ -31,6 +32,7 @@ import com.technovix.quiznova.ui.theme.*
 import com.technovix.quiznova.ui.viewmodel.QuizViewModel
 import com.technovix.quiznova.util.Resource
 import com.technovix.quiznova.util.ThemePreference
+import com.technovix.quiznova.ui.viewmodel.QuizUiState // QuizUiState'i import etmeyi unutma
 
 @OptIn(ExperimentalMaterial3Api::class, ExperimentalAnimationApi::class)
 @Composable
@@ -42,15 +44,15 @@ fun QuizScreen(
 ) {
     val uiState by viewModel.uiState.collectAsState()
     var showExitDialog by remember { mutableStateOf(false) }
+    val context = LocalContext.current
+    val activity = context as? Activity // Activity'yi güvenli bir şekilde al
 
-    // Geri tuşu basıldığında Quiz bitmemişse ve dialog açık değilse onay sor
     BackHandler(enabled = !uiState.isQuizFinished && !showExitDialog) {
         showExitDialog = true
     }
 
-    // Quiz'den Çıkış Onay Dialogu
     if (showExitDialog) {
-        ExitConfirmationDialog( // Ayrılmış componenti kullan
+        ExitConfirmationDialog(
             onConfirm = {
                 showExitDialog = false
                 navController.popBackStack()
@@ -80,7 +82,13 @@ fun QuizScreen(
                 },
                 navigationIcon = {
                     IconButton(onClick = {
-                        if (uiState.isQuizFinished) navController.popBackStack() else showExitDialog = true
+                        if (uiState.isQuizFinished) {
+                            // Quiz bittiyse ve geri gidiyorsa reklam gösterme
+                            // Ya da istersen burada da reklam gösterebilirsin, ama genelde sonuç ekranındaki butonlar için istenir.
+                            navController.popBackStack()
+                        } else {
+                            showExitDialog = true
+                        }
                     }) {
                         Icon(
                             Icons.AutoMirrored.Filled.ArrowBack,
@@ -107,8 +115,8 @@ fun QuizScreen(
                 modifier = Modifier
                     .fillMaxSize()
                     .padding(paddingValues)
-                    .padding(horizontal = 16.dp),
-                contentAlignment = Alignment.TopCenter
+                    .padding(horizontal = 16.dp), // Yatay padding'i burada ver
+                contentAlignment = Alignment.TopCenter // İçeriği üstte ortala
             ) {
                 AnimatedContent(
                     targetState = uiState.questions,
@@ -116,8 +124,8 @@ fun QuizScreen(
                     label = "QuizScreenContentSwitch"
                 ) { questionsState ->
                     when (questionsState) {
-                        is Resource.Loading -> LoadingAnimationQuiz(modifier = Modifier.align(Alignment.Center)) // Component çağrısı
-                        is Resource.Error -> ErrorViewQuiz( // Component çağrısı
+                        is Resource.Loading -> LoadingAnimationQuiz(modifier = Modifier.align(Alignment.Center))
+                        is Resource.Error -> ErrorViewQuiz(
                             modifier = Modifier.align(Alignment.Center).padding(32.dp),
                             message = questionsState.message ?: stringResource(R.string.error_loading_questions),
                             onRetry = viewModel::retryLoadQuestions
@@ -125,7 +133,7 @@ fun QuizScreen(
                         is Resource.Success -> {
                             val questions = questionsState.data
                             if (questions.isNullOrEmpty()) {
-                                EmptyQuestionsView( // Component çağrısı
+                                EmptyQuestionsView(
                                     modifier = Modifier.align(Alignment.Center).padding(32.dp),
                                     onBack = { navController.popBackStack() }
                                 )
@@ -142,26 +150,54 @@ fun QuizScreen(
                                     label = "QuizFinishSwitch"
                                 ) { isFinished ->
                                     if (isFinished) {
-                                        QuizResultContent( // Component çağrısı (İsmi değiştirdik)
+                                        QuizResultContent(
                                             score = uiState.score,
                                             totalQuestions = questions.size,
                                             userAnswers = uiState.userAnswers,
-                                            onRestart = viewModel::restartQuiz,
-                                            onBackToCategories = { navController.popBackStack() }
+                                            onRestart = {
+                                                if (activity != null) {
+                                                    viewModel.showInterstitialAd(activity) {
+                                                        viewModel.restartQuiz()
+                                                    }
+                                                } else {
+                                                    // Activity null ise (genellikle olmaz ama önlem)
+                                                    viewModel.restartQuiz()
+                                                }
+                                            },
+                                            onBackToCategories = {
+                                                if (activity != null) {
+                                                    viewModel.showInterstitialAd(activity) {
+                                                        navController.popBackStack()
+                                                    }
+                                                } else {
+                                                    // Activity null ise
+                                                    navController.popBackStack()
+                                                }
+                                            },
+                                            // QuizResultContent'in kendi padding'i varsa,
+                                            // Modifier.padding(horizontal = 16.dp) buraya da eklenebilir
+                                            // ama QuizResultContent içindeki Column'a padding vermek daha iyi olabilir.
+                                            // Şimdilik QuizResultContent'in kendi padding'ini yönettiğini varsayıyoruz.
+                                            modifier = Modifier.fillMaxSize() // Sonuç ekranının tüm alanı kaplaması için
                                         )
                                     } else {
                                         val currentQuestion = questions.getOrNull(uiState.currentQuestionIndex)
                                         if (currentQuestion != null) {
-                                            QuestionContent( // Component çağrısı
+                                            QuestionContent(
                                                 uiState = uiState,
                                                 question = currentQuestion,
                                                 totalQuestions = questions.size,
                                                 onAnswerSelected = viewModel::onAnswerSelected,
                                                 onSubmitAnswer = viewModel::submitAnswer,
-                                                onNextQuestion = viewModel::nextQuestion
+                                                onNextQuestion = viewModel::nextQuestion,
+                                                // QuestionContent'in kendi padding'i varsa,
+                                                // Modifier.padding(horizontal = 16.dp) buraya da eklenebilir.
+                                                // Ama bu padding Box'tan geliyor.
+                                                modifier = Modifier.fillMaxSize() // Soru içeriğinin tüm alanı kaplaması için
                                             )
                                         } else {
-                                            ErrorViewQuiz( // Component çağrısı
+                                            // Bu durum normalde olmamalı, question listesi boş değilse ve index sınırlar içindeyse.
+                                            ErrorViewQuiz(
                                                 modifier = Modifier.align(Alignment.Center).padding(32.dp),
                                                 message = stringResource(R.string.error_unexpected_question),
                                                 onRetry = { viewModel.restartQuiz() }
@@ -171,9 +207,9 @@ fun QuizScreen(
                                 }
                             }
                         }
-                    } // end when
-                } // end AnimatedContent
-            } // end İçerik Box
-        } // end Arka Plan Box
-    } // end Scaffold
+                    }
+                }
+            }
+        }
+    }
 }
