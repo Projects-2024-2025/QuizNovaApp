@@ -1,14 +1,10 @@
 package com.technovix.quiznova.ui.screen.category
 
-import android.content.Intent
-import android.net.Uri
-import android.util.Log
 import androidx.compose.animation.*
 import androidx.compose.animation.core.*
 import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.background
 import androidx.compose.foundation.gestures.detectTransformGestures
-import androidx.compose.foundation.isSystemInDarkTheme
 import androidx.compose.foundation.layout.*
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.*
@@ -18,7 +14,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.input.pointer.pointerInput
-import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.platform.LocalConfiguration
 import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
@@ -50,11 +46,14 @@ fun CategoryScreen(
 ) {
     val categoriesState by viewModel.categories.collectAsState()
     var showMenu by remember { mutableStateOf(false) }
-    val context = LocalContext.current
-    //val privacyPolicyUrl = stringResource(R.string.url_privacy_policy)
     var isGridViewVisible by remember { mutableStateOf(true) } // Grid ile başla
     val zoomOutThreshold = 0.85f
     val zoomInThreshold = 1.15f
+
+    val configuration = LocalConfiguration.current // EKLENDİ
+    val screenWidthDp = configuration.screenWidthDp.dp // EKLENDİ
+
+    val screenContentPadding = if (screenWidthDp < 360.dp) 8.dp else 0.dp
 
     val backgroundBrush = if (currentTheme == ThemePreference.DARK) {
         darkAppBackgroundGradient()

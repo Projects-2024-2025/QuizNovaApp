@@ -4,7 +4,6 @@ import androidx.annotation.StringRes
 import androidx.compose.animation.*
 import androidx.compose.animation.core.*
 import androidx.compose.foundation.BorderStroke
-import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.grid.GridCells // Düzenli Grid için
@@ -26,7 +25,7 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.Shape
 import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.graphics.vector.ImageVector
-import androidx.compose.ui.res.dimensionResource // Boyut kaynakları için
+import androidx.compose.ui.platform.LocalConfiguration
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
@@ -68,6 +67,13 @@ fun ThemeMenuItem(
 // Yükleme animasyonu
 @Composable
 fun LoadingAnimation(modifier: Modifier = Modifier) {
+    val configuration = LocalConfiguration.current
+    val screenWidthDp: Dp = configuration.screenWidthDp.dp
+    val isCompact = screenWidthDp < 380.dp
+
+    val lottieSize = if (isCompact) 150.dp else 180.dp
+    val textStyle = if (isCompact) MaterialTheme.typography.bodyMedium else MaterialTheme.typography.bodyLarge
+
     val composition by rememberLottieComposition(LottieCompositionSpec.RawRes(R.raw.lottie_loading))
     Column(
         horizontalAlignment = Alignment.CenterHorizontally,
@@ -77,41 +83,73 @@ fun LoadingAnimation(modifier: Modifier = Modifier) {
         LottieAnimation(
             composition = composition,
             iterations = LottieConstants.IterateForever,
-            modifier = Modifier.size(180.dp)
+            modifier = Modifier.size(lottieSize)
         )
         Spacer(modifier = Modifier.height(16.dp))
         Text(
             stringResource(R.string.loading_categories),
             color = MaterialTheme.colorScheme.onSurfaceVariant,
-            style = MaterialTheme.typography.bodyLarge
+            style = textStyle
         )
     }
 }
 
 // Kategori Carousel Görünümü (Üstü Boş)
-@OptIn(ExperimentalFoundationApi::class)
 @Composable
 fun CategoryCarousel(
     categories: List<CategoryEntity>,
     onCategorySelect: (CategoryEntity) -> Unit,
     modifier: Modifier = Modifier
 ) {
+    if (categories.isEmpty()) {
+        Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
+            Text("Kategoriler yükleniyor veya bulunamadı.")
+        }
+        return
+    }
     val pagerState = rememberPagerState(pageCount = { categories.size })
     val currentCategory by remember { derivedStateOf { categories.getOrNull(pagerState.currentPage) } }
+
+    val configuration = LocalConfiguration.current
+    val screenWidthDp: Dp = configuration.screenWidthDp.dp
+    val screenHeightDp: Dp = configuration.screenHeightDp.dp
+
+    val isCompactWidth = screenWidthDp < 380.dp
+    val isCompactHeight = screenHeightDp < 650.dp
+
+    val topSpacerHeight = if (isCompactHeight) 12.dp else 20.dp
+
+    val pagerContentHorizontalPadding = when {
+        screenWidthDp < 360.dp -> 40.dp
+        screenWidthDp < 420.dp -> 48.dp
+        else -> 56.dp
+    }
+    val pagerPageSpacing = if (isCompactWidth) 12.dp else 16.dp
+
+    val indicatorVerticalPadding = if (isCompactHeight) 16.dp else 24.dp
+    val indicatorHorizontalPadding = if (isCompactWidth) 24.dp else 32.dp
+    val indicatorDotSize = if (isCompactWidth) 6.dp else 8.dp // Hem width hem height için
+    val indicatorSpacing = if (isCompactWidth) 6.dp else 8.dp
+
+    val buttonFillMaxWidthFraction = if (isCompactWidth) 0.85f else 0.75f
+    val buttonVerticalPaddingTop = if (isCompactHeight) 12.dp else 16.dp
+    val buttonVerticalPaddingBottom = if (isCompactHeight) 32.dp else 48.dp
+    val buttonHeight = if (isCompactHeight) 50.dp else 56.dp
+    val buttonFontSize = if (isCompactWidth) 14.sp else 16.sp
 
     Column(
         modifier = modifier.fillMaxSize(),
         horizontalAlignment = Alignment.CenterHorizontally
     ) {
-        Spacer(modifier = Modifier.height(20.dp)) // Pager'dan önceki boşluk.
+        Spacer(modifier = Modifier.height(topSpacerHeight)) // Pager'dan önceki boşluk.
 
         HorizontalPager(
             state = pagerState,
             modifier = Modifier
                 .fillMaxWidth()
                 .weight(1f),
-            contentPadding = PaddingValues(horizontal = 56.dp),
-            pageSpacing = 16.dp
+            contentPadding = PaddingValues(horizontal = pagerContentHorizontalPadding),
+            pageSpacing = pagerPageSpacing
         ) { pageIndex ->
             categories.getOrNull(pageIndex)?.let { category ->
                 val icon = getIconForCategory(category.name)
@@ -121,6 +159,8 @@ fun CategoryCarousel(
                     category = category,
                     icon = icon,
                     accentColor = accentColor,
+                    isCompactWidth = isCompactWidth,
+                    isCompactHeight = isCompactHeight,
                     modifier = Modifier
                         .graphicsLayer {
                             val pageOffset = ((pagerState.currentPage - pageIndex) + pagerState.currentPageOffsetFraction).absoluteValue
@@ -136,12 +176,14 @@ fun CategoryCarousel(
 
         HorizontalPagerIndicator(
             pagerState = pagerState,
-            modifier = Modifier.padding(vertical = 24.dp),
+            modifier = Modifier
+                .padding(vertical = indicatorVerticalPadding)
+                .padding(horizontal = indicatorHorizontalPadding),
             activeColor = MaterialTheme.colorScheme.primary,
             inactiveColor = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.3f),
-            indicatorWidth = 8.dp,
-            indicatorHeight = 8.dp,
-            spacing = 8.dp,
+            indicatorWidth = indicatorDotSize,
+            indicatorHeight = indicatorDotSize,
+            spacing = indicatorSpacing,
             indicatorShape = CircleShape,
             activeIndicatorWidthMultiplier = 2.5f
         )
@@ -151,9 +193,9 @@ fun CategoryCarousel(
             onClick = { currentCategory?.let { onCategorySelect(it) } },
             enabled = buttonEnabled,
             modifier = Modifier
-                .fillMaxWidth(0.75f)
-                .padding(bottom = 48.dp, top = 16.dp)
-                .height(56.dp),
+                .fillMaxWidth(buttonFillMaxWidthFraction)
+                .padding(top = buttonVerticalPaddingTop, bottom = buttonVerticalPaddingBottom)
+                .height(buttonHeight),
             shape = MaterialTheme.shapes.medium,
             elevation = ButtonDefaults.buttonElevation(
                 defaultElevation = if (buttonEnabled) 6.dp else 0.dp,
@@ -176,7 +218,7 @@ fun CategoryCarousel(
                     text = if (displayName.isNotEmpty()) stringResource(R.string.start_quiz_button_short, displayName)
                     else stringResource(R.string.select_category_button),
                     fontWeight = FontWeight.Bold,
-                    fontSize = 16.sp,
+                    fontSize = buttonFontSize,
                     maxLines = 1,
                     overflow = TextOverflow.Ellipsis
                 )
@@ -192,12 +234,25 @@ fun CategoryGridRegular(
     onItemClick: (CategoryEntity) -> Unit,
     modifier: Modifier = Modifier
 ) {
+    val configuration = LocalConfiguration.current
+    val screenWidthDp: Dp = configuration.screenWidthDp.dp
+
+    val numColumns = when {
+        screenWidthDp < 360.dp -> 2
+        screenWidthDp < 600.dp -> 2
+        screenWidthDp < 840.dp -> 3
+        else -> 4
+    }
+
+    val contentPaddingAll = if (screenWidthDp < 360.dp) 12.dp else 16.dp
+    val itemSpacing = if (screenWidthDp < 360.dp) 12.dp else 16.dp
+
     LazyVerticalGrid(
-        columns = GridCells.Fixed(2), // Sütun sayısı
+        columns = GridCells.Fixed(numColumns), // Sütun sayısı
         modifier = modifier.fillMaxSize(),
-        contentPadding = PaddingValues(16.dp),
-        horizontalArrangement = Arrangement.spacedBy(16.dp), // Yatay boşluk
-        verticalArrangement = Arrangement.spacedBy(16.dp)   // Dikey boşluk
+        contentPadding = PaddingValues(contentPaddingAll),
+        horizontalArrangement = Arrangement.spacedBy(itemSpacing), // Yatay boşluk
+        verticalArrangement = Arrangement.spacedBy(itemSpacing)   // Dikey boşluk
     ) {
         itemsIndexed(
             items = categories,
@@ -212,6 +267,7 @@ fun CategoryGridRegular(
                 icon = icon,
                 accentColor = accentColor,
                 onClick = { onItemClick(category) },
+                isCompact = screenWidthDp < 380.dp,
                 modifier = Modifier.aspectRatio(1f) // Kare oranını uygula
             )
         }
@@ -225,12 +281,18 @@ fun CategoryGridItem(
     category: CategoryEntity,
     icon: ImageVector,
     accentColor: Color,
-    onClick: () -> Unit
+    onClick: () -> Unit,
+    isCompact: Boolean
 ) {
     // ÖNEMLİ NOT: Aşağıdaki dimensionResource() kullanımları için
     // projenizde res/values/dimens.xml dosyasında ilgili boyutları tanımlamanız gerekir.
     // Örnek: <dimen name="card_grid_padding">12dp</dimen>
     // Eğer tanımlamak istemiyorsanız, doğrudan .dp değerlerini kullanın (örn: .padding(12.dp)).
+    val cardPadding = if (isCompact) 8.dp else 12.dp
+    val iconBackgroundSize = if (isCompact) 56.dp else 64.dp
+    val iconSize = if (isCompact) 30.dp else 36.dp
+    val spacerHeight = if (isCompact) 6.dp else 8.dp
+    val textStyle = if (isCompact) MaterialTheme.typography.labelLarge else MaterialTheme.typography.titleMedium
 
     Card(
         onClick = onClick,
@@ -260,15 +322,13 @@ fun CategoryGridItem(
             Column(
                 modifier = Modifier
                     .fillMaxSize()
-                    .padding(dimensionResource(id = R.dimen.card_grid_padding)), // İç padding
-                // veya .padding(12.dp)
+                    .padding(cardPadding), // İç padding
                 horizontalAlignment = Alignment.CenterHorizontally,
                 verticalArrangement = Arrangement.Center // İçeriği dikeyde ortala
             ) {
                 Box(
                     modifier = Modifier
-                        .size(dimensionResource(id = R.dimen.card_grid_icon_background_size)) // İkon arka plan boyutu
-                        // veya .size(64.dp)
+                        .size(iconBackgroundSize) // İkon arka plan boyutu
                         .clip(CircleShape)
                         .background(accentColor.copy(alpha = 0.15f)),
                     contentAlignment = Alignment.Center
@@ -276,16 +336,14 @@ fun CategoryGridItem(
                     Icon(
                         imageVector = icon,
                         contentDescription = category.name, // Orijinal isim kalsın
-                        modifier = Modifier.size(dimensionResource(id = R.dimen.card_grid_icon_size)), // İkon boyutu
-                        // veya .size(36.dp)
+                        modifier = Modifier.size(iconSize), // İkon boyutu
                         tint = accentColor
                     )
                 }
-                Spacer(modifier = Modifier.height(dimensionResource(id = R.dimen.card_grid_spacer_height))) // İkon ve metin arası boşluk
-                // veya .height(8.dp)
+                Spacer(modifier = Modifier.height(spacerHeight)) // İkon ve metin arası boşluk
                 Text(
                     text = category.name.substringAfterLast(':', category.name).trim(), // Kısaltılmış metin
-                    style = MaterialTheme.typography.titleMedium, // Stil ayarlanabilir
+                    style = textStyle, // Stil ayarlanabilir
                     fontWeight = FontWeight.Bold,
                     textAlign = TextAlign.Center,
                     maxLines = 2, // Kare kart için 2 satır genellikle yeterli
@@ -303,10 +361,20 @@ fun CategoryPageItem(
     category: CategoryEntity,
     icon: ImageVector,
     accentColor: Color,
+    isCompactHeight: Boolean,
+    isCompactWidth: Boolean,
     modifier: Modifier = Modifier
 ) {
+    // Kartın yüksekliğini ve içindeki elemanların boyutlarını ayarla
+    val cardFillMaxHeight = if (isCompactHeight) 0.9f else 0.85f // Pager içindeki kartın yüksekliği
+    val cardInternalPadding = if (isCompactWidth || isCompactHeight) 24.dp else 32.dp
+    val iconContainerSize = if (isCompactWidth || isCompactHeight) 80.dp else 96.dp
+    val iconActualSize = if (isCompactWidth || isCompactHeight) 48.dp else 56.dp
+    val spacerHeight = if (isCompactHeight) 16.dp else 24.dp
+    val textStyle = if (isCompactWidth || isCompactHeight) MaterialTheme.typography.headlineSmall else MaterialTheme.typography.headlineMedium
+
     Card(
-        modifier = modifier.fillMaxHeight(0.95f),
+        modifier = modifier.fillMaxHeight(cardFillMaxHeight),
         shape = MaterialTheme.shapes.extraLarge,
         elevation = CardDefaults.cardElevation(defaultElevation = 10.dp),
         colors = CardDefaults.cardColors(containerColor = Color.Transparent)
@@ -327,13 +395,13 @@ fun CategoryPageItem(
             Column(
                 modifier = Modifier
                     .fillMaxSize()
-                    .padding(32.dp),
+                    .padding(cardInternalPadding),
                 horizontalAlignment = Alignment.CenterHorizontally,
                 verticalArrangement = Arrangement.Center
             ) {
                 Box(
                     modifier = Modifier
-                        .size(96.dp)
+                        .size(iconContainerSize)
                         .clip(CircleShape)
                         .background(MaterialTheme.colorScheme.surface.copy(alpha = 0.5f)),
                     contentAlignment = Alignment.Center
@@ -341,14 +409,14 @@ fun CategoryPageItem(
                     Icon(
                         imageVector = icon,
                         contentDescription = category.name, // Orijinal isim kalsın
-                        modifier = Modifier.size(56.dp),
+                        modifier = Modifier.size(iconActualSize),
                         tint = accentColor
                     )
                 }
-                Spacer(modifier = Modifier.height(24.dp))
+                Spacer(modifier = Modifier.height(spacerHeight))
                 Text(
                     text = category.name.substringAfterLast(':', category.name).trim(), // Kısaltılmış metin
-                    style = MaterialTheme.typography.headlineMedium,
+                    style = textStyle,
                     fontWeight = FontWeight.ExtraBold,
                     color = MaterialTheme.colorScheme.onSurface,
                     textAlign = TextAlign.Center,
@@ -363,7 +431,6 @@ fun CategoryPageItem(
 
 
 // Yatay Pager Göstergesi
-@OptIn(ExperimentalFoundationApi::class)
 @Composable
 fun HorizontalPagerIndicator(
     pagerState: PagerState,
@@ -383,20 +450,22 @@ fun HorizontalPagerIndicator(
         verticalAlignment = Alignment.CenterVertically,
     ) {
         val currentPage = pagerState.currentPage
-        repeat(pagerState.pageCount) { iteration ->
-            val width by animateDpAsState(
-                targetValue = if (currentPage == iteration) activeIndicatorWidth else indicatorWidth,
-                animationSpec = tween(durationMillis = 300, easing = FastOutSlowInEasing),
-                label = "IndicatorWidthAnim"
-            )
-            val color = if (currentPage == iteration) activeColor else inactiveColor
-            Box(
-                modifier = Modifier
-                    .clip(indicatorShape)
-                    .background(color)
-                    .height(indicatorHeight)
-                    .width(width)
-            )
+        if (pagerState.pageCount > 0) { // Sayfa sayısı 0'dan büyükse göster
+            repeat(pagerState.pageCount) { iteration ->
+                val width by animateDpAsState(
+                    targetValue = if (currentPage == iteration) activeIndicatorWidth else indicatorWidth,
+                    animationSpec = tween(durationMillis = 300, easing = FastOutSlowInEasing),
+                    label = "IndicatorWidthAnim"
+                )
+                val color = if (currentPage == iteration) activeColor else inactiveColor
+                Box(
+                    modifier = Modifier
+                        .clip(indicatorShape)
+                        .background(color)
+                        .height(indicatorHeight)
+                        .width(width)
+                )
+            }
         }
     }
 }
@@ -404,6 +473,12 @@ fun HorizontalPagerIndicator(
 // Boş Durum Görünümü
 @Composable
 fun EmptyStateView(modifier: Modifier = Modifier) {
+    val configuration = LocalConfiguration.current
+    val screenWidthDp = configuration.screenWidthDp.dp
+    val isCompact = screenWidthDp < 380.dp
+
+    val iconSize = if (isCompact) 70.dp else 80.dp
+    val textStyle = if (isCompact) MaterialTheme.typography.titleSmall else MaterialTheme.typography.titleMedium
     Column(
         modifier = modifier.padding(horizontal = 32.dp).fillMaxSize(),
         horizontalAlignment = Alignment.CenterHorizontally,
@@ -412,14 +487,14 @@ fun EmptyStateView(modifier: Modifier = Modifier) {
         Icon(
             Icons.Filled.SearchOff,
             contentDescription = null,
-            modifier = Modifier.size(80.dp),
+            modifier = Modifier.size(iconSize),
             tint = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.7f)
         )
         Spacer(modifier = Modifier.height(24.dp))
         Text(
             stringResource(R.string.category_empty_state),
             color = MaterialTheme.colorScheme.onSurfaceVariant,
-            style = MaterialTheme.typography.titleMedium,
+            style = textStyle,
             textAlign = TextAlign.Center,
             fontWeight = FontWeight.Medium
         )
@@ -429,6 +504,16 @@ fun EmptyStateView(modifier: Modifier = Modifier) {
 // Hata Durumu Görünümü
 @Composable
 fun ErrorView(message: String, onRetry: () -> Unit, modifier: Modifier = Modifier) {
+    val configuration = LocalConfiguration.current
+    val screenWidthDp = configuration.screenWidthDp.dp
+    val isCompact = screenWidthDp < 380.dp
+
+    val lottieSize = if (isCompact) 170.dp else 200.dp
+    val titleStyle = if (isCompact) MaterialTheme.typography.titleLarge else MaterialTheme.typography.headlineSmall
+    val messageStyle = if (isCompact) MaterialTheme.typography.bodyMedium else MaterialTheme.typography.bodyLarge
+    val buttonPaddingHorizontal = if (isCompact) 24.dp else 32.dp
+    val buttonPaddingVertical = if (isCompact) 10.dp else 12.dp
+
     val composition by rememberLottieComposition(LottieCompositionSpec.RawRes(R.raw.lottie_error))
     Column(
         horizontalAlignment = Alignment.CenterHorizontally,
@@ -437,12 +522,12 @@ fun ErrorView(message: String, onRetry: () -> Unit, modifier: Modifier = Modifie
     ) {
         LottieAnimation(
             composition = composition,
-            modifier = Modifier.size(200.dp)
+            modifier = Modifier.size(lottieSize)
         )
         Spacer(modifier = Modifier.height(24.dp))
         Text(
             text = stringResource(R.string.error_oops),
-            style = MaterialTheme.typography.headlineSmall,
+            style = titleStyle,
             color = MaterialTheme.colorScheme.error,
             fontWeight = FontWeight.Bold,
             textAlign = TextAlign.Center
@@ -450,7 +535,7 @@ fun ErrorView(message: String, onRetry: () -> Unit, modifier: Modifier = Modifie
         Spacer(modifier = Modifier.height(12.dp))
         Text(
             text = message,
-            style = MaterialTheme.typography.bodyLarge,
+            style = messageStyle,
             textAlign = TextAlign.Center,
             color = MaterialTheme.colorScheme.onSurfaceVariant
         )
@@ -462,7 +547,7 @@ fun ErrorView(message: String, onRetry: () -> Unit, modifier: Modifier = Modifie
                 containerColor = MaterialTheme.colorScheme.primary,
                 contentColor = MaterialTheme.colorScheme.onPrimary
             ),
-            contentPadding = PaddingValues(horizontal = 32.dp, vertical = 12.dp)
+            contentPadding = PaddingValues(horizontal = buttonPaddingHorizontal, vertical = buttonPaddingVertical)
         ) {
             Icon(Icons.Filled.Refresh, contentDescription = null)
             Spacer(Modifier.size(ButtonDefaults.IconSpacing))

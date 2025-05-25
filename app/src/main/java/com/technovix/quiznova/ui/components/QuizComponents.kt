@@ -1,17 +1,17 @@
 package com.technovix.quiznova.ui.components
 
-import android.provider.CalendarContract.Colors
 import androidx.compose.animation.*
 import androidx.compose.animation.core.*
 import androidx.compose.foundation.BorderStroke
-import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.itemsIndexed
+import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.selection.selectable
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.automirrored.filled.ArrowForward
@@ -23,16 +23,12 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.draw.scale
 import androidx.compose.ui.draw.shadow
-import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.graphics.RectangleShape
 import androidx.compose.ui.graphics.StrokeCap
 import androidx.compose.ui.graphics.vector.ImageVector
-import androidx.compose.ui.res.colorResource
+import androidx.compose.ui.platform.LocalConfiguration
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.semantics.Role
-import androidx.compose.ui.semantics.heading
-import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextOverflow
@@ -84,6 +80,25 @@ fun QuestionContent(
     onNextQuestion: () -> Unit,
     modifier: Modifier = Modifier
 ) {
+    val configuration = LocalConfiguration.current
+    val screenWidthDp: Dp = configuration.screenWidthDp.dp
+    val screenHeightDp: Dp = configuration.screenHeightDp.dp
+
+    val isCompactScreen = screenWidthDp < 380.dp
+    val isVerySmallScreenHeight = screenHeightDp < 600.dp
+
+    val progressBarHeight = if (isCompactScreen) 10.dp else 12.dp
+    val topSectionBottomPadding = if (isVerySmallScreenHeight) 16.dp else 24.dp
+
+    val questionTextBottomPadding = if (isVerySmallScreenHeight) 20.dp else 32.dp
+    val questionTextHorizontalPadding = if (isCompactScreen) 8.dp else 12.dp
+
+    val answerOptionSpacing = if (isVerySmallScreenHeight) 10.dp else 14.dp
+    val lottieFeedbackSize = if (isCompactScreen) 160.dp else 200.dp
+
+    val submitButtonVerticalPadding = if (isVerySmallScreenHeight) 8.dp else 16.dp
+    val submitButtonFontSize = if (isCompactScreen) 14.sp else 16.sp
+
     // İlerleme çubuğu için animasyonlu değer
     val progress by animateFloatAsState(
         targetValue = if (totalQuestions > 0) (uiState.currentQuestionIndex + 1).toFloat() / totalQuestions.toFloat() else 0f,
@@ -108,23 +123,22 @@ fun QuestionContent(
     Column(
         modifier = modifier
             .fillMaxSize()
-            .padding(vertical = 16.dp, horizontal = 4.dp), // Üst/alt ve hafif yan boşluk
+            .padding(vertical = 16.dp), // Üst/alt ve hafif yan boşluk
         horizontalAlignment = Alignment.CenterHorizontally
     ) {
         // Üst Kısım: İlerleme Çubuğu ve Soru Sayacı
         Row(
             verticalAlignment = Alignment.CenterVertically,
             modifier = Modifier
-                .padding(bottom = 24.dp)
+                .padding(bottom = topSectionBottomPadding)
                 .fillMaxWidth()
-                .padding(horizontal = 8.dp)
         ) {
             LinearProgressIndicator(
                 progress = { progress },
                 modifier = Modifier
                     .weight(1f)
-                    .height(12.dp)
-                    .clip(RoundedCornerShape(6.dp)),
+                    .height(progressBarHeight)
+                    .clip(RoundedCornerShape(progressBarHeight / 2)),
                 color = MaterialTheme.colorScheme.primary, // Ana tema rengi
                 trackColor = MaterialTheme.colorScheme.surfaceVariant // İz rengi
             )
@@ -158,7 +172,10 @@ fun QuestionContent(
             ){ currentQuestion ->
                 Column(
                     horizontalAlignment = Alignment.CenterHorizontally,
-                    modifier = Modifier.padding(bottom = 16.dp) // Butonla arasına boşluk
+                    modifier = Modifier
+                        .fillMaxSize()
+                        .verticalScroll(rememberScrollState())
+                        .padding(bottom = 16.dp) // Butonla arasına boşluk
                 ) {
                     // Soru Metni
                     Text(
@@ -166,7 +183,12 @@ fun QuestionContent(
                         style = MaterialTheme.typography.headlineSmall,
                         fontWeight = FontWeight.Medium,
                         textAlign = TextAlign.Center,
-                        modifier = Modifier.padding(bottom = 32.dp, start = 12.dp, end = 12.dp)
+                        modifier = Modifier.padding(
+                            top = 8.dp,
+                            bottom = questionTextBottomPadding,
+                            start = questionTextHorizontalPadding,
+                            end = questionTextHorizontalPadding
+                        )
                     )
 
                     // Cevap Seçenekleri Listesi
@@ -179,7 +201,7 @@ fun QuestionContent(
                             enabled = !uiState.isAnswerSubmitted, // Gönderildiyse tıklanamaz
                             onSelect = { onAnswerSelected(answer) } // Seçim callback'i
                         )
-                        Spacer(modifier = Modifier.height(14.dp)) // Seçenekler arası boşluk
+                        Spacer(modifier = Modifier.height(answerOptionSpacing)) // Seçenekler arası boşluk
                     }
                 }
             } // End AnimatedContent (Soru)
@@ -199,7 +221,7 @@ fun QuestionContent(
                 LottieAnimation(
                     composition = composition,
                     iterations = 1, // Tek sefer oyna
-                    modifier = Modifier.size(200.dp) // Animasyon boyutu
+                    modifier = Modifier.size(lottieFeedbackSize) // Animasyon boyutu
                 )
             }
         } // End Box (Orta Kısım)
@@ -230,11 +252,14 @@ fun QuestionContent(
                 enabled = isEnabled,
                 modifier = Modifier
                     .fillMaxWidth()
-                    .padding(bottom = 16.dp, top = 8.dp), // Alt ve üst boşluk
+                    .padding(
+                        bottom = submitButtonVerticalPadding,
+                        top = if (isVerySmallScreenHeight) 4.dp else 8.dp
+                    ), // Alt ve üst boşluk
             ) {
                 Icon(buttonIcon, contentDescription = null, modifier = Modifier.size(ButtonDefaults.IconSize))
                 Spacer(Modifier.size(ButtonDefaults.IconSpacing))
-                Text(stringResource(buttonTextRes), fontWeight = FontWeight.Bold, fontSize = 16.sp)
+                Text(stringResource(buttonTextRes), fontWeight = FontWeight.Bold, fontSize = submitButtonFontSize)
             }
         } // End AnimatedContent (Buton)
     } // End Column (QuestionContent)
@@ -252,6 +277,15 @@ fun AnswerOption(
     onSelect: () -> Unit,
     modifier: Modifier = Modifier
 ) {
+    val configuration = LocalConfiguration.current
+    val screenWidthDp: Dp = configuration.screenWidthDp.dp
+    val isCompactScreen = screenWidthDp < 380.dp
+
+    val cardPaddingVertical = if (isCompactScreen) 12.dp else 16.dp
+    val cardPaddingHorizontal = 16.dp
+    val answerTextStyle = if (isCompactScreen) MaterialTheme.typography.bodyMedium else MaterialTheme.typography.bodyLarge
+    val iconBoxSize = if (isCompactScreen) 20.dp else 24.dp
+
     // Hedef renkleri, ölçeği ve yüksekliği duruma göre belirle
     val targetBorderColor: Color
     val targetBackgroundColor: Color
@@ -324,20 +358,23 @@ fun AnswerOption(
         elevation = CardDefaults.cardElevation(defaultElevation = elevation) // Animasyonlu yükseklik
     ) {
         Row(
-            modifier = Modifier.padding(horizontal = 16.dp, vertical = 16.dp), // İç boşluk
+            modifier = Modifier.padding(
+                horizontal = cardPaddingHorizontal,
+                vertical = cardPaddingVertical
+            ), // İç boşluk
             verticalAlignment = Alignment.CenterVertically
         ) {
             // Cevap Metni
             Text(
                 text = text,
-                style = MaterialTheme.typography.bodyLarge,
+                style = answerTextStyle,
                 modifier = Modifier.weight(1f), // Kalan alanı doldur
                 color = textColor // Animasyonlu metin rengi
             )
-            Spacer(modifier = Modifier.width(12.dp))
+            Spacer(modifier = Modifier.width(if (isCompactScreen) 8.dp else 12.dp))
 
             // Sağdaki İkon/RadioButton Alanı (Animasyonlu Geçişli)
-            Box(modifier = Modifier.size(24.dp), contentAlignment = Alignment.Center) {
+            Box(modifier = Modifier.size(iconBoxSize), contentAlignment = Alignment.Center) {
                 AnimatedContent(
                     targetState = isSubmitted,
                     transitionSpec = {
@@ -384,7 +421,6 @@ fun AnswerOption(
 
 
 // --- Quiz Sonuç Ekranı (GÜNCELLENMİŞ) ---
-@OptIn(ExperimentalMaterial3Api::class) // Scaffold gibi bileşenler için gerekebilir
 @Composable
 fun QuizResultContent( // İsim aynı kalıyor
     score: Int,
@@ -394,6 +430,15 @@ fun QuizResultContent( // İsim aynı kalıyor
     onBackToCategories: () -> Unit,
     modifier: Modifier = Modifier // Dışarıdan modifier alabilmesi iyi bir pratik
 ) {
+    val configuration = LocalConfiguration.current
+    val screenWidthDp: Dp = configuration.screenWidthDp.dp
+    val screenHeightDp: Dp = configuration.screenHeightDp.dp
+
+    val isCompactScreen = screenWidthDp < 380.dp
+    val isVerySmallScreenHeight = screenHeightDp < 600.dp
+
+    val verticalPadding = if (isVerySmallScreenHeight) 16.dp else 24.dp
+
     val scorePercentage = if (totalQuestions > 0) score.toFloat() / totalQuestions.toFloat() else 0f
 
     val resultData = remember(scorePercentage) {
@@ -413,7 +458,7 @@ fun QuizResultContent( // İsim aynı kalıyor
         ResultType.BAD -> ErrorRed
     }
 
-    val resultLottieComposition by rememberLottieComposition(LottieCompositionSpec.RawRes(lottieResId))
+    //val resultLottieComposition by rememberLottieComposition(LottieCompositionSpec.RawRes(lottieResId))
     val animatedScore by animateIntAsState(
         targetValue = score,
         animationSpec = tween(1500, easing = FastOutSlowInEasing),
@@ -425,14 +470,20 @@ fun QuizResultContent( // İsim aynı kalıyor
         label = "ProgressAnimation"
     )
 
-    // Ekranın geneli için yumuşak bir gradient (isteğe bağlı, kaldırılabilir veya QuizScreen'e taşınabilir)
-    val screenBackground = Brush.verticalGradient(
-        colors = listOf(
-            MaterialTheme.colorScheme.surface.copy(alpha = 0.5f),
-            MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.2f),
-            MaterialTheme.colorScheme.surface.copy(alpha = 0.5f)
-        )
+    val resultMessageTextStyle = if (isCompactScreen) MaterialTheme.typography.headlineSmall else MaterialTheme.typography.headlineMedium
+    val circularProgressSize = if (isCompactScreen) 80.dp else 100.dp
+    val circularProgressStrokeWidth = if (isCompactScreen) 6.dp else 8.dp
+    val scoreTextStyle = MaterialTheme.typography.headlineLarge.copy(
+        fontSize = if (isCompactScreen) 28.sp else 36.sp
     )
+    val totalQuestionsTextStyle = if (isCompactScreen) MaterialTheme.typography.titleSmall else MaterialTheme.typography.titleMedium
+
+    val summaryTitleStyle = if (isCompactScreen) MaterialTheme.typography.titleMedium else MaterialTheme.typography.titleLarge
+    val summaryTitleBottomPadding = if (isVerySmallScreenHeight) 8.dp else 12.dp
+
+    val answerSummarySpacing = if (isVerySmallScreenHeight) 8.dp else 12.dp
+    val buttonsSectionSpacing = if (isVerySmallScreenHeight) 16.dp else 24.dp
+    val buttonArrangementSpacing = if (isCompactScreen) 8.dp else 16.dp
 
     // Box yerine Column kullandık, çünkü QuizScreen'deki Scaffold zaten bir Box gibi davranıyor
     // ve paddingleri yönetiyor. Arka planı QuizScreen'e taşıyabilirsiniz.
@@ -440,54 +491,47 @@ fun QuizResultContent( // İsim aynı kalıyor
         modifier = modifier // Dışarıdan gelen modifier'ı uygula
             .fillMaxSize()
             // .background(screenBackground) // Bu arka planı QuizScreen'in Box'ına taşıyabilirsiniz
-            //.padding(16.dp)
+            .padding(vertical = verticalPadding)
             .border(width = 2.dp, shape = RoundedCornerShape(size = 16.dp), color = MaterialTheme.colorScheme.onPrimaryContainer).padding(32.dp), // QuizScreen'den gelen padding'e ek olarak veya onun yerine
         horizontalAlignment = Alignment.CenterHorizontally
     ) {
         // --- ÜST KISIM: Lottie, Mesaj ve Skor ---
         Column(
             horizontalAlignment = Alignment.CenterHorizontally,
-            modifier = Modifier.padding(bottom = 24.dp)
+            modifier = Modifier.padding(bottom = if (isVerySmallScreenHeight) 16.dp else 24.dp)
         ) {
-            /*LottieAnimation(
-                composition = resultLottieComposition,
-                iterations = 1,
-                modifier = Modifier
-                    .size(if (resultType == ResultType.PERFECT || resultType == ResultType.GREAT) 180.dp else 150.dp)
-                    .padding(bottom = 16.dp)
-            )*/
             Text(
                 text = stringResource(id = resultMessageResId),
-                style = MaterialTheme.typography.headlineMedium,
+                style = resultMessageTextStyle,
                 fontWeight = FontWeight.Bold,
                 textAlign = TextAlign.Center,
                 color = resultColor
             )
-            Spacer(modifier = Modifier.height(12.dp))
+            Spacer(modifier = Modifier.height(if (isCompactScreen) 8.dp else 12.dp))
 
             // Skor ve Dairesel İlerleme Göstergesi
             Box(contentAlignment = Alignment.Center) {
                 CircularProgressIndicator(
                     progress = { animatedProgress },
-                    modifier = Modifier.size(100.dp),
+                    modifier = Modifier.size(circularProgressSize),
                     color = resultColor,
-                    strokeWidth = 8.dp,
+                    strokeWidth = circularProgressStrokeWidth,
                     trackColor = MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.5f),
                     strokeCap = StrokeCap.Round
                 )
                 Row(verticalAlignment = Alignment.CenterVertically) {
                     Text(
                         text = "$animatedScore",
-                        style = MaterialTheme.typography.headlineLarge.copy(fontSize = 36.sp),
+                        style = scoreTextStyle,
                         fontWeight = FontWeight.ExtraBold,
                         color = resultColor
                     )
                     Text(
                         text = "/$totalQuestions",
-                        style = MaterialTheme.typography.titleMedium,
+                        style = totalQuestionsTextStyle,
                         fontWeight = FontWeight.Medium,
                         color = MaterialTheme.colorScheme.onSurfaceVariant,
-                        modifier = Modifier.padding(start = 4.dp, bottom = 4.dp)
+                        modifier = Modifier.padding(start = 4.dp, bottom = if (isCompactScreen) 2.dp else 4.dp)
                     )
                 }
             }
@@ -496,16 +540,16 @@ fun QuizResultContent( // İsim aynı kalıyor
         // --- ORTA KISIM: Cevap Özeti Başlığı ---
         Text(
             stringResource(R.string.quiz_result_summary),
-            style = MaterialTheme.typography.titleLarge,
+            style = summaryTitleStyle,
             fontWeight = FontWeight.SemiBold,
             color = MaterialTheme.colorScheme.onSurface,
-            modifier = Modifier.padding(bottom = 12.dp)
+            modifier = Modifier.padding(bottom = summaryTitleBottomPadding)
         )
 
         // --- CEVAP LİSTESİ (Kartlar İçinde) ---
         LazyColumn(
             modifier = Modifier.weight(1f),
-            verticalArrangement = Arrangement.spacedBy(12.dp)
+            verticalArrangement = Arrangement.spacedBy(answerSummarySpacing)
         ) {
             itemsIndexed(
                 items = userAnswers,
@@ -520,28 +564,52 @@ fun QuizResultContent( // İsim aynı kalıyor
                 )
             }
         }
-        Spacer(modifier = Modifier.height(24.dp))
+        Spacer(modifier = Modifier.height(buttonsSectionSpacing))
 
         // --- ALT KISIM: Butonlar ---
-        Row(
-            modifier = Modifier.fillMaxWidth(),
-            horizontalArrangement = Arrangement.spacedBy(16.dp)
-        ) {
-            AppSecondaryButton( // Kendi özel butonunuzu kullanın
-                onClick = onBackToCategories,
-                modifier = Modifier.weight(1.15f)
+        if (screenWidthDp < 400.dp && totalQuestions > 0) { // Çok dar ekranlar için butonları alt alta al
+            Column(
+                modifier = Modifier.fillMaxWidth(),
+                verticalArrangement = Arrangement.spacedBy(buttonArrangementSpacing),
+                horizontalAlignment = Alignment.CenterHorizontally // Butonları ortala
             ) {
-                Icon(Icons.Filled.ListAlt, contentDescription = null)
-                Spacer(Modifier.size(ButtonDefaults.IconSpacing))
-                Text(stringResource(R.string.quiz_result_back_to_categories))
+                AppSecondaryButton(
+                    onClick = onBackToCategories,
+                    modifier = Modifier.fillMaxWidth(0.8f) // Biraz daha dar yapabiliriz
+                ) {
+                    Icon(Icons.Filled.ListAlt, contentDescription = null)
+                    Spacer(Modifier.size(ButtonDefaults.IconSpacing))
+                    Text(stringResource(R.string.quiz_result_back_to_categories))
+                }
+                AppPrimaryButton(
+                    onClick = onRestart,
+                    modifier = Modifier.fillMaxWidth(0.8f)
+                ) {
+                    Icon(Icons.Filled.Replay, contentDescription = null)
+                    Spacer(Modifier.size(ButtonDefaults.IconSpacing))
+                    Text(stringResource(R.string.quiz_result_play_again))
+                }
             }
-            AppPrimaryButton( // Kendi özel butonunuzu kullanın
-                onClick = onRestart,
-                modifier = Modifier.weight(1f)
+        } else if (totalQuestions > 0) { // Normal ve geniş ekranlar için yan yana
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                horizontalArrangement = Arrangement.spacedBy(buttonArrangementSpacing) // Dinamik
             ) {
-                Icon(Icons.Filled.Replay, contentDescription = null)
-                Spacer(Modifier.size(ButtonDefaults.IconSpacing))
-                Text(stringResource(R.string.quiz_result_play_again))
+                AppSecondaryButton(
+                    onClick = onBackToCategories,
+                    modifier = Modifier.weight(1.15f)
+                ) { Icon(Icons.Filled.ListAlt, contentDescription = null)
+                    Spacer(Modifier.size(ButtonDefaults.IconSpacing))
+                    Text(stringResource(R.string.quiz_result_back_to_categories))
+                }
+                AppPrimaryButton(
+                    onClick = onRestart,
+                    modifier = Modifier.weight(1f)
+                ) {
+                    Icon(Icons.Filled.Replay, contentDescription = null)
+                    Spacer(Modifier.size(ButtonDefaults.IconSpacing))
+                    Text(stringResource(R.string.quiz_result_play_again))
+                }
             }
         }
     }
@@ -558,6 +626,17 @@ fun AnswerSummaryItemCard(
     correctAnswerText: String,
     isCorrect: Boolean
 ) {
+    val configuration = LocalConfiguration.current
+    val screenWidthDp: Dp = configuration.screenWidthDp.dp
+    val isCompactScreen = screenWidthDp < 380.dp
+
+    val cardPaddingHorizontal = if (isCompactScreen) 12.dp else 16.dp
+    val cardPaddingVertical = if (isCompactScreen) 10.dp else 12.dp
+    val iconPaddingTop = if (isCompactScreen) 0.dp else 2.dp
+    val textSpacing = if (isCompactScreen) 4.dp else 6.dp
+    val questionTextStyle = if (isCompactScreen) MaterialTheme.typography.bodyMedium else MaterialTheme.typography.bodyLarge
+    val answerTextStyle = if (isCompactScreen) MaterialTheme.typography.bodySmall else MaterialTheme.typography.bodyMedium
+
     val cardColor = if (isCorrect) SuccessGreen.copy(alpha = 0.1f) else ErrorRed.copy(alpha = 0.1f)
     val icon = if (isCorrect) Icons.Filled.CheckCircle else Icons.Filled.Cancel
     val iconColor = if (isCorrect) SuccessGreen else ErrorRed
@@ -573,39 +652,39 @@ fun AnswerSummaryItemCard(
         Row(
             modifier = Modifier
                 .fillMaxWidth()
-                .padding(horizontal = 16.dp, vertical = 12.dp),
+                .padding(horizontal = cardPaddingHorizontal, vertical = cardPaddingVertical),
             verticalAlignment = Alignment.Top
         ) {
             Icon(
                 imageVector = icon,
                 contentDescription = if (isCorrect) stringResource(R.string.cd_correct_answer) else stringResource(R.string.cd_incorrect_answer),
                 tint = iconColor,
-                modifier = Modifier.padding(top = 2.dp)
+                modifier = Modifier.padding(top = iconPaddingTop)
             )
-            Spacer(modifier = Modifier.width(12.dp))
+            Spacer(modifier = Modifier.width(if (isCompactScreen) 8.dp else 12.dp))
             Column(modifier = Modifier.weight(1f)) {
                 Text(
                     text = "$questionNumber. $questionText",
-                    style = MaterialTheme.typography.bodyLarge,
+                    style = questionTextStyle,
                     fontWeight = FontWeight.Medium,
                     maxLines = 2,
                     overflow = TextOverflow.Ellipsis,
                     color = MaterialTheme.colorScheme.onSurface
                 )
-                Spacer(modifier = Modifier.height(6.dp))
+                Spacer(modifier = Modifier.height(textSpacing))
                 Text(
                     text = stringResource(R.string.quiz_result_your_answer, userAnswerText),
-                    style = MaterialTheme.typography.bodyMedium,
+                    style = answerTextStyle,
                     color = if (isCorrect) MaterialTheme.colorScheme.onSurfaceVariant else iconColor,
                     fontWeight = if (!isCorrect) FontWeight.Bold else FontWeight.Normal,
                     maxLines = 1,
                     overflow = TextOverflow.Ellipsis
                 )
                 if (!isCorrect) {
-                    Spacer(modifier = Modifier.height(4.dp))
+                    Spacer(modifier = Modifier.height(if (isCompactScreen) 2.dp else 4.dp))
                     Text(
                         text = stringResource(R.string.quiz_result_correct_answer, correctAnswerText),
-                        style = MaterialTheme.typography.bodyMedium,
+                        style = answerTextStyle,
                         color = SuccessGreen,
                         fontWeight = FontWeight.SemiBold,
                         maxLines = 1,
@@ -627,6 +706,12 @@ fun AnswerSummaryItemCard(
 // --- Yükleme Animasyonu ---
 @Composable
 fun LoadingAnimationQuiz(modifier: Modifier = Modifier) {
+    val configuration = LocalConfiguration.current
+    val screenWidthDp = configuration.screenWidthDp.dp
+    val isCompactScreen = screenWidthDp < 380.dp
+
+    val lottieSize = if (isCompactScreen) 120.dp else 160.dp
+    val textStyle = if (isCompactScreen) MaterialTheme.typography.bodyMedium else MaterialTheme.typography.bodyLarge
     val composition by rememberLottieComposition(LottieCompositionSpec.RawRes(R.raw.lottie_loading))
     Column(
         horizontalAlignment = Alignment.CenterHorizontally,
@@ -638,13 +723,13 @@ fun LoadingAnimationQuiz(modifier: Modifier = Modifier) {
         LottieAnimation(
             composition = composition,
             iterations = LottieConstants.IterateForever,
-            modifier = Modifier.size(160.dp)
+            modifier = Modifier.size(lottieSize)
         )
-        Spacer(modifier = Modifier.height(16.dp))
+        Spacer(modifier = Modifier.height(if (isCompactScreen) 12.dp else 16.dp))
         Text(
             stringResource(R.string.loading_questions), // Quiz'e özel metin
             color = MaterialTheme.colorScheme.onSurfaceVariant,
-            style = MaterialTheme.typography.bodyLarge
+            style = textStyle
         )
     }
 }

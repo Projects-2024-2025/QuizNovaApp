@@ -20,7 +20,7 @@
     <string name="quiz_result_good">Not Bad!</string>
     <string name="quiz_result_bad">Could Be Better</string>
     <string name="quiz_result_summary">Summary</string>
-    <string name="quiz_result_back_to_categories">Categories</string>
+    <string name="quiz_result_back_to_categories">Back to Categories</string>
     <string name="quiz_result_play_again">Play Again</string>
     <string name="retry">Retry</string>
     <string name="error_oops">Oops!</string>
@@ -120,4 +120,6 @@
     If you have any questions about this Privacy Policy, please contact us at: your.email@example.com
     ]]>
     </string>
+    <string name="error_offline_no_cached_categories">Error offline no cached categories</string>
+    <string name="error_categories_unknown_flow">Error categories unknown flow</string>
 </resources>

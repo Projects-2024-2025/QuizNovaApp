@@ -13,26 +13,23 @@ import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.platform.LocalConfiguration
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
+import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.navigation.NavController
 import com.technovix.quiznova.R
-import com.technovix.quiznova.ui.components.EmptyQuestionsView
-import com.technovix.quiznova.ui.components.ErrorViewQuiz
-import com.technovix.quiznova.ui.components.ExitConfirmationDialog
-import com.technovix.quiznova.ui.components.LoadingAnimationQuiz
-import com.technovix.quiznova.ui.components.QuestionContent
-import com.technovix.quiznova.ui.components.QuizResultContent
+import com.technovix.quiznova.ui.components.*
 import com.technovix.quiznova.ui.theme.*
 import com.technovix.quiznova.ui.viewmodel.QuizViewModel
 import com.technovix.quiznova.util.Resource
 import com.technovix.quiznova.util.ThemePreference
-import com.technovix.quiznova.ui.viewmodel.QuizUiState // QuizUiState'i import etmeyi unutma
+import timber.log.Timber
 
 @OptIn(ExperimentalMaterial3Api::class, ExperimentalAnimationApi::class)
 @Composable
@@ -45,10 +42,54 @@ fun QuizScreen(
     val uiState by viewModel.uiState.collectAsState()
     var showExitDialog by remember { mutableStateOf(false) }
     val context = LocalContext.current
-    val activity = context as? Activity // Activity'yi güvenli bir şekilde al
+    val activity = remember(context) { context as? Activity }
 
+    val configuration = LocalConfiguration.current
+    val screenWidthDp: Dp = configuration.screenWidthDp.dp
+
+    val horizontalMainPadding = when {
+        screenWidthDp < 360.dp -> 8.dp
+        screenWidthDp < 600.dp -> 16.dp
+        else -> 24.dp
+    }
+
+    // Yaşam döngüsü gözlemcisi - İsteğe bağlı: Ekran tekrar aktif olduğunda reklam yüklemeyi deneyebilir
+    /*
+    val lifecycleOwner = LocalLifecycleOwner.current
+    DisposableEffect(lifecycleOwner, activity, uiState.isQuizFinished) {
+        val observer = LifecycleEventObserver { _, event ->
+            if (event == Lifecycle.Event.ON_RESUME) {
+                if (uiState.isQuizFinished && activity != null) {
+                    // viewModel.loadInterstitialAd() // ViewModel'de public yapılması veya
+                                                    // zaten periyodik yükleme yapıyorsa gerekmeyebilir.
+                    Timber.tag("QuizScreen").d("ON_RESUME & quiz finished: Consider loading ad if not already.")
+                }
+            }
+        }
+        lifecycleOwner.lifecycle.addObserver(observer)
+        onDispose {
+            lifecycleOwner.lifecycle.removeObserver(observer)
+        }
+    }
+    */
+
+    // Quiz DEVAM EDİYORKEN sistem geri tuşu basılırsa -> Çıkış onayı göster
     BackHandler(enabled = !uiState.isQuizFinished && !showExitDialog) {
+        Timber.tag("QuizScreen").d("BackHandler: Quiz in progress. Showing exit dialog.")
         showExitDialog = true
+    }
+
+    // Quiz BİTMİŞKEN (sonuç ekranı görünürken) sistem geri tuşu basılırsa -> Reklam göster, sonra geri git
+    BackHandler(enabled = uiState.isQuizFinished) {
+        if (activity != null) {
+            Timber.tag("QuizScreen").d("BackHandler: Quiz finished. Showing ad then popBackStack.")
+            viewModel.showInterstitialAd(activity) {
+                navController.popBackStack()
+            }
+        } else {
+            Timber.tag("QuizScreen").w("BackHandler: Quiz finished, but activity is null. Popping back stack directly.")
+            navController.popBackStack()
+        }
     }
 
     if (showExitDialog) {
@@ -83,10 +124,17 @@ fun QuizScreen(
                 navigationIcon = {
                     IconButton(onClick = {
                         if (uiState.isQuizFinished) {
-                            // Quiz bittiyse ve geri gidiyorsa reklam gösterme
-                            // Ya da istersen burada da reklam gösterebilirsin, ama genelde sonuç ekranındaki butonlar için istenir.
-                            navController.popBackStack()
+                            if (activity != null) {
+                                Timber.tag("QuizScreen").d("TopAppBar Back: Quiz finished. Showing ad then popBackStack.")
+                                viewModel.showInterstitialAd(activity) {
+                                    navController.popBackStack()
+                                }
+                            } else {
+                                Timber.tag("QuizScreen").w("TopAppBar Back: Quiz finished, but activity is null. Popping back stack directly.")
+                                navController.popBackStack()
+                            }
                         } else {
+                            Timber.tag("QuizScreen").d("TopAppBar Back: Quiz in progress. Showing exit dialog.")
                             showExitDialog = true
                         }
                     }) {
@@ -115,12 +163,15 @@ fun QuizScreen(
                 modifier = Modifier
                     .fillMaxSize()
                     .padding(paddingValues)
-                    .padding(horizontal = 16.dp), // Yatay padding'i burada ver
-                contentAlignment = Alignment.TopCenter // İçeriği üstte ortala
+                    .padding(horizontal = horizontalMainPadding),
+                contentAlignment = Alignment.TopCenter
             ) {
                 AnimatedContent(
                     targetState = uiState.questions,
-                    transitionSpec = { fadeIn(tween(300)) togetherWith fadeOut(tween(300)) },
+                    transitionSpec = {
+                        fadeIn(animationSpec = tween(300)) togetherWith
+                                fadeOut(animationSpec = tween(300))
+                    },
                     label = "QuizScreenContentSwitch"
                 ) { questionsState ->
                     when (questionsState) {
@@ -135,7 +186,10 @@ fun QuizScreen(
                             if (questions.isNullOrEmpty()) {
                                 EmptyQuestionsView(
                                     modifier = Modifier.align(Alignment.Center).padding(32.dp),
-                                    onBack = { navController.popBackStack() }
+                                    onBack = {
+                                        Timber.tag("QuizScreen").d("EmptyQuestionsView: Navigating back.")
+                                        navController.popBackStack() // Boş soru durumunda direkt geri git
+                                    }
                                 )
                             } else {
                                 AnimatedContent(
@@ -156,29 +210,27 @@ fun QuizScreen(
                                             userAnswers = uiState.userAnswers,
                                             onRestart = {
                                                 if (activity != null) {
+                                                    Timber.tag("QuizScreen").d("QuizResultContent: Restarting quiz. Showing ad.")
                                                     viewModel.showInterstitialAd(activity) {
                                                         viewModel.restartQuiz()
                                                     }
                                                 } else {
-                                                    // Activity null ise (genellikle olmaz ama önlem)
+                                                    Timber.tag("QuizScreen").w("QuizResultContent: Restarting quiz, but activity is null.")
                                                     viewModel.restartQuiz()
                                                 }
                                             },
                                             onBackToCategories = {
                                                 if (activity != null) {
+                                                    Timber.tag("QuizScreen").d("QuizResultContent: Going back to categories. Showing ad.")
                                                     viewModel.showInterstitialAd(activity) {
                                                         navController.popBackStack()
                                                     }
                                                 } else {
-                                                    // Activity null ise
+                                                    Timber.tag("QuizScreen").w("QuizResultContent: Going back to categories, but activity is null.")
                                                     navController.popBackStack()
                                                 }
                                             },
-                                            // QuizResultContent'in kendi padding'i varsa,
-                                            // Modifier.padding(horizontal = 16.dp) buraya da eklenebilir
-                                            // ama QuizResultContent içindeki Column'a padding vermek daha iyi olabilir.
-                                            // Şimdilik QuizResultContent'in kendi padding'ini yönettiğini varsayıyoruz.
-                                            modifier = Modifier.fillMaxSize() // Sonuç ekranının tüm alanı kaplaması için
+                                            modifier = Modifier.fillMaxSize()
                                         )
                                     } else {
                                         val currentQuestion = questions.getOrNull(uiState.currentQuestionIndex)
@@ -190,13 +242,10 @@ fun QuizScreen(
                                                 onAnswerSelected = viewModel::onAnswerSelected,
                                                 onSubmitAnswer = viewModel::submitAnswer,
                                                 onNextQuestion = viewModel::nextQuestion,
-                                                // QuestionContent'in kendi padding'i varsa,
-                                                // Modifier.padding(horizontal = 16.dp) buraya da eklenebilir.
-                                                // Ama bu padding Box'tan geliyor.
-                                                modifier = Modifier.fillMaxSize() // Soru içeriğinin tüm alanı kaplaması için
+                                                modifier = Modifier.fillMaxSize()
                                             )
                                         } else {
-                                            // Bu durum normalde olmamalı, question listesi boş değilse ve index sınırlar içindeyse.
+                                            Timber.tag("QuizScreen").e("Error: Current question is null unexpectedly when quiz is not finished.")
                                             ErrorViewQuiz(
                                                 modifier = Modifier.align(Alignment.Center).padding(32.dp),
                                                 message = stringResource(R.string.error_unexpected_question),
