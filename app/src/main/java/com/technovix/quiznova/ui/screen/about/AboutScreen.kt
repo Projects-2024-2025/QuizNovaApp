@@ -1,7 +1,6 @@
 package com.technovix.quiznova.ui.screen.about
 
 import androidx.compose.foundation.background
-// import androidx.compose.foundation.isSystemInDarkTheme // Bu import artık burada gereksiz
 import androidx.compose.foundation.layout.*
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
@@ -12,14 +11,13 @@ import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.navigation.NavController
-import com.technovix.quiznova.BuildConfig // <<<--- EKLENDİ
+import com.technovix.quiznova.BuildConfig
 import com.technovix.quiznova.R
 import com.technovix.quiznova.ui.theme.darkAppBackgroundGradient
 import com.technovix.quiznova.ui.theme.lightAppBackgroundGradient

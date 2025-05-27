@@ -1,5 +1,6 @@
 package com.technovix.quiznova.ui.viewmodel
 
+import android.app.Application
 import androidx.lifecycle.SavedStateHandle
 import app.cash.turbine.test // Flow testi için Turbine
 import com.google.common.truth.Truth.assertThat // Assertion için Truth
@@ -9,6 +10,7 @@ import com.technovix.quiznova.util.HtmlDecoder
 import com.technovix.quiznova.util.Resource
 import io.mockk.*
 import io.mockk.impl.annotations.MockK
+import io.mockk.impl.annotations.RelaxedMockK
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.flow.flowOf
@@ -28,8 +30,14 @@ class QuizViewModelTest {
     val mainDispatcherRule = MainDispatcherRule(StandardTestDispatcher()) // StandardDispatcher kullanıyoruz
 
     // Mock nesneler
-    @MockK private lateinit var repository: QuizRepository
-    @MockK private lateinit var htmlDecoder: HtmlDecoder
+    @RelaxedMockK
+    lateinit var repository: QuizRepository
+
+    @RelaxedMockK
+    lateinit var htmlDecoder: HtmlDecoder
+
+    @RelaxedMockK // Application için de bir mock oluşturun
+    lateinit var mockApplication: Application
     private lateinit var savedStateHandle: SavedStateHandle
 
     // Test edilecek ViewModel
@@ -40,16 +48,28 @@ class QuizViewModelTest {
     private val categoryName = "General Knowledge"
     private val questionAmount = 10
 
+    @Before
+    fun setUp() {
+        MockKAnnotations.init(this, relaxUnitFun = true)
+        // Her test kendi mock davranışını tanımlayacağı için burada genel mock yok.
+    }
+
     // --- Yardımcı Fonksiyonlar ---
     private fun createViewModel(initialState: Map<String, Any?> = mapOf()): QuizViewModel {
         savedStateHandle = SavedStateHandle(initialState)
-        // Navigasyondan gelmesi beklenen argümanları handle'a ekle
         savedStateHandle[QuizViewModel.CATEGORY_ID_KEY] = categoryId
         savedStateHandle[QuizViewModel.CATEGORY_NAME_KEY] = categoryName
-        // Testte HtmlDecoder'ın basitçe input'u döndürmesini sağla
-        // Bu, ViewModel'deki decode fonksiyonunun hata vermesini engeller
+
+        // htmlDecoder'ın decode fonksiyonunu mock'la
         every { htmlDecoder.decode(any()) } answers { firstArg() }
-        return QuizViewModel(repository, savedStateHandle, htmlDecoder)
+
+        // QuizViewModel'i oluştururken mockApplication'ı da verin
+        return QuizViewModel(
+            repository = repository,
+            savedStateHandle = savedStateHandle,
+            htmlDecoder = htmlDecoder,
+            application = mockApplication // <<<--- EKLENEN PARAMETRE
+        )
     }
 
     private fun createFakeQuestionEntity(
@@ -67,13 +87,9 @@ class QuizViewModelTest {
             allAnswers = allAnswers, fetchedTimestamp = System.currentTimeMillis()
         )
     }
-    // --- Yardımcı Fonksiyonlar Bitti ---
 
-    @Before
-    fun setUp() {
-        MockKAnnotations.init(this, relaxUnitFun = true)
-        // Her test kendi mock davranışını tanımlayacağı için burada genel mock yok.
-    }
+
+
 
     // --- init Testleri ---
 

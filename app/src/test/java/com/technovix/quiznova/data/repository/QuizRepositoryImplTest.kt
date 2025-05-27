@@ -1,6 +1,7 @@
 package com.technovix.quiznova.data.repository
 
 import android.R.attr.type
+import android.content.Context
 import app.cash.turbine.test
 import com.google.common.truth.Truth.assertThat
 import com.technovix.quiznova.data.datasource.local.QuizLocalDataSource
@@ -10,10 +11,12 @@ import com.technovix.quiznova.data.remote.dto.OpenTriviaResponse
 import com.technovix.quiznova.data.remote.dto.QuestionDto
 import com.technovix.quiznova.util.NetworkMonitor
 import com.technovix.quiznova.util.Resource
+import io.mockk.MockKAnnotations
 import io.mockk.coEvery
 import io.mockk.coVerify
 import io.mockk.every
 import io.mockk.impl.annotations.MockK
+import io.mockk.impl.annotations.RelaxedMockK
 import io.mockk.junit4.MockKRule
 import io.mockk.mockk
 import kotlinx.coroutines.ExperimentalCoroutinesApi
@@ -31,9 +34,17 @@ class QuizRepositoryImplTest {
     @get:Rule
     val mockkRule = MockKRule(this)
 
-    @MockK private lateinit var remoteDataSource: QuizRemoteDataSource
-    @MockK private lateinit var localDataSource: QuizLocalDataSource
-    @MockK private lateinit var networkMonitor: NetworkMonitor
+    @RelaxedMockK
+    lateinit var mockContext: Context // Context için mock
+
+    @RelaxedMockK
+    lateinit var remoteDataSource: QuizRemoteDataSource // Bu zaten vardı
+
+    @RelaxedMockK
+    lateinit var localDataSource: QuizLocalDataSource // Bu zaten vardı
+
+    @RelaxedMockK
+    lateinit var networkMonitor: NetworkMonitor // Bu zaten vardı
 
     // Artık spyk değil, normal lateinit
     private lateinit var repository: QuizRepositoryImpl
@@ -45,8 +56,15 @@ class QuizRepositoryImplTest {
 
     @Before
     fun setUp() {
-        // Normal başlatma, spyk yok
-        repository = QuizRepositoryImpl(remoteDataSource, localDataSource, networkMonitor)
+        MockKAnnotations.init(this, relaxUnitFun = true)
+
+        // QuizRepositoryImpl'i doğru sırada ve doğru türde mock'larla başlat
+        repository = QuizRepositoryImpl(
+            context = mockContext,             // 1. Context
+            remoteDataSource = remoteDataSource, // 2. QuizRemoteDataSource
+            localDataSource = localDataSource,   // 3. QuizLocalDataSource
+            networkMonitor = networkMonitor      // 4. NetworkMonitor
+        )
     }
 
     // --- getQuestions Testleri ---

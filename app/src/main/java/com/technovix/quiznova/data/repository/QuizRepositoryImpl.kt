@@ -1,6 +1,5 @@
 package com.technovix.quiznova.data.repository
 
-import android.text.Html
 import com.technovix.quiznova.data.datasource.local.QuizLocalDataSource
 import com.technovix.quiznova.data.datasource.remote.QuizRemoteDataSource
 import com.technovix.quiznova.data.local.entity.CategoryEntity
@@ -14,14 +13,17 @@ import kotlinx.coroutines.flow.*
 import java.util.concurrent.TimeUnit
 import javax.inject.Inject
 import javax.inject.Singleton
-import android.content.Context // Context import et
-import com.technovix.quiznova.R // R sınıfını import et
-import dagger.hilt.android.qualifiers.ApplicationContext // Hilt için ApplicationContext
+import android.content.Context
+import com.technovix.quiznova.R
+import dagger.hilt.android.qualifiers.ApplicationContext
+import kotlinx.coroutines.channels.awaitClose
+import kotlinx.coroutines.launch
+import timber.log.Timber
 
 
 @Singleton
 class QuizRepositoryImpl @Inject constructor(
-    @ApplicationContext private val context: Context, // Context'i enjekte et
+    @ApplicationContext private val context: Context,
     private val remoteDataSource: QuizRemoteDataSource,
     private val localDataSource: QuizLocalDataSource,
     private val networkMonitor: NetworkMonitor
@@ -30,32 +32,85 @@ class QuizRepositoryImpl @Inject constructor(
     // Önbellek geçerlilik süresi (örneğin 1 saat)
     private val CACHE_EXPIRY_MS = TimeUnit.HOURS.toMillis(1)
 
-    // Hardcoded kategoriler hala burada kalabilir, çünkü bunlar geliştirme/varsayılan veri.
-    // Kullanıcıya gösterilen mesajlar değiller.
-    private val hardcodedCategories = listOf(
-        CategoryEntity(id = 9, name = "General Knowledge"),
-        // ... diğer hardcoded kategoriler
-    )
+    override fun getCategories(): Flow<Resource<List<CategoryEntity>>> = channelFlow {
+        // 1. Her zaman ilk olarak yükleme durumunu gönder
+        send(Resource.Loading())
+        Timber.d("QuizRepository: getCategories - Loading durumu gönderildi")
 
-    override fun getCategories(): Flow<Resource<List<CategoryEntity>>> = flow {
-        emit(Resource.Loading())
-        val localCategoriesFlow = localDataSource.getAllCategories()
-        var emittedInitialLocalData = false
+        var initialCacheChecked = false
+        var hasEmittedDataFromCache = false
 
-        localCategoriesFlow.collect { localCategories ->
-            if (!emittedInitialLocalData || localCategories.isNotEmpty()) {
-                println("QuizRepository: Yerel kategoriler emit ediliyor (sayı: ${localCategories.size}).")
-                emit(Resource.Success(localCategories))
-                emittedInitialLocalData = true
+        // 2. Yerel veritabanındaki değişiklikleri dinle ve UI'a yansıt
+        val localDataJob = launch { // Ayrı bir coroutine'de yerel veriyi dinle
+            localDataSource.getAllCategories()
+                .distinctUntilChanged() // Sadece gerçekten değiştiğinde emit et
+                .collect { localCategories ->
+                    initialCacheChecked = true // Cache en az bir kez kontrol edildi
+                    if (localCategories.isNotEmpty()) {
+                        Timber.d("QuizRepository: Yerel kategoriler alındı (${localCategories.size} adet). Success durumu gönderiliyor.")
+                        send(Resource.Success(localCategories))
+                        hasEmittedDataFromCache = true
+                    } else if (hasEmittedDataFromCache) {
+                        Timber.d("QuizRepository: Yerel kategoriler daha önce doluydu, şimdi boş. Success(emptyList) gönderiliyor.")
+                        send(Resource.Success(emptyList()))
+                    }
+                }
+        }
+
+        // 3. Ağdan veri çekmeyi ve cache'i güncellemeyi dene
+        try {
+            if (networkMonitor.isOnline.first()) {
+                Timber.d("QuizRepository: Ağ bağlantısı var, uzak kategori kaynağı deneniyor...")
+                when (val remoteResult = remoteDataSource.getCategories()) {
+                    is Resource.Success -> {
+                        val categoryDtos = remoteResult.data?.trivia_categories
+                        if (categoryDtos != null) {
+                            Timber.d("QuizRepository: Uzak kategoriler başarıyla alındı (${categoryDtos.size} adet). Kaydediliyor...")
+                            val categoryEntities = mapCategoryDtoToEntity(categoryDtos)
+
+                            localDataSource.insertCategories(categoryEntities) // Veya clearAndInsertCategories
+                        } else {
+                            Timber.e("QuizRepository: Uzak kategoriler null veya data.trivia_categories null geldi.")
+                            if (initialCacheChecked && !hasEmittedDataFromCache) {
+                                send(Resource.Error(context.getString(R.string.error_categories_empty_from_server)))
+                            }
+                        }
+                    }
+                    is Resource.Error -> {
+                        Timber.e("QuizRepository Kategori Hatası: Uzak kategoriler alınamadı: ${remoteResult.message}")
+                        // Ağdan veri alınamadı, cache boş değilse kullanıcı cache'i görmeye devam eder.
+                        // Eğer cache de boşsa (initialCacheChecked true ve hasEmittedDataFromCache false ise) hata ver.
+                        if (initialCacheChecked && !hasEmittedDataFromCache) {
+                            send(Resource.Error(remoteResult.message ?: context.getString(R.string.error_categories_fetch_failed)))
+                        }
+                    }
+                    is Resource.Loading -> { /* Bu Resource.Loading remoteDataSource'dan gelmemeli */ }
+                }
+            } else {
+                Timber.e("QuizRepository: Kategorileri çekmek için çevrimdışı.")
+                val currentCache = localDataSource.getAllCategories().firstOrNull() // Anlık kontrol
+                if (currentCache.isNullOrEmpty()) {
+                    send(Resource.Error(context.getString(R.string.error_offline_no_cached_categories)))
+                }
+
             }
-            if (localCategories.isEmpty() && emittedInitialLocalData) {
-                println("QuizRepository: Yerel kategoriler boş, uzak kaynak deneniyor...")
-                fetchAndCacheCategories()
+        } catch (e: Exception) {
+            Timber.e("QuizRepository Kategori Hatası: Ağ veya işleme sırasında istisna: ${e.localizedMessage}")
+            // Genel bir hata. Cache boş değilse kullanıcı cache'i görmeye devam eder.
+            // Eğer cache de boşsa (initialCacheChecked true ve hasEmittedDataFromCache false ise) hata ver.
+            val currentCacheOnException = localDataSource.getAllCategories().firstOrNull()
+            if (currentCacheOnException.isNullOrEmpty()) {
+                val errorMessage = e.localizedMessage ?: context.getString(R.string.error_unknown_server_or_network)
+                send(Resource.Error(context.getString(R.string.error_categories_unknown, errorMessage)))
             }
         }
-    }.catch { e ->
-        val errorMessage = e.localizedMessage ?: context.getString(R.string.error_unknown_server_or_network)
-        emit(Resource.Error(context.getString(R.string.error_categories_unknown, errorMessage)))
+
+        // channelFlow'un kapanmasını bekle (Coroutine iptal edilene kadar)
+        awaitClose {
+            Timber.d("QuizRepository: getCategories channelFlow kapatılıyor.")
+            localDataJob.cancel() // Yerel veri dinleme coroutine'ini iptal et
+        }
+
     }.flowOn(Dispatchers.IO)
 
     private suspend fun fetchAndCacheCategories() {

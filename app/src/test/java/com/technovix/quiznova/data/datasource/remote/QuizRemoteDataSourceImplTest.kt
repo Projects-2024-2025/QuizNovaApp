@@ -1,5 +1,6 @@
 package com.technovix.quiznova.data.datasource.remote
 
+import android.content.Context
 import com.google.common.truth.Truth.assertThat
 import com.technovix.quiznova.data.remote.OpenTriviaApi
 import com.technovix.quiznova.data.remote.dto.OpenTriviaResponse
@@ -8,6 +9,7 @@ import com.technovix.quiznova.util.Resource
 import io.mockk.coEvery
 import io.mockk.coVerify
 import io.mockk.impl.annotations.MockK
+import io.mockk.impl.annotations.RelaxedMockK
 import io.mockk.mockk
 import kotlinx.coroutines.test.runTest
 import okhttp3.MediaType.Companion.toMediaTypeOrNull
@@ -22,13 +24,16 @@ class QuizRemoteDataSourceImplTest {
     @MockK
     private lateinit var api: OpenTriviaApi
 
+    @RelaxedMockK // Context için de bir mock oluşturun
+    lateinit var mockContext: Context
+
     private lateinit var dataSource: QuizRemoteDataSourceImpl
 
     @Before
     fun setUp() {
         // Annotation ile oluşturulan mock'ları başlat
         io.mockk.MockKAnnotations.init(this, relaxUnitFun = true)  //relaxUnitFun = true, Unit dönen fonksiyonları otomatik mock'lar
-        dataSource = QuizRemoteDataSourceImpl(api)
+        dataSource = QuizRemoteDataSourceImpl(mockContext, api)
     }
 
     @Test

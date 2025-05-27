@@ -147,7 +147,7 @@ object TestAppModule {
         val mockRepo: ThemeSettingsRepository = mockk(relaxed = true)
 
         // 2. Kontrol edilebilir StateFlow oluştur.
-        val currentThemeFlow = MutableStateFlow(ThemePreference.SYSTEM)
+        val currentThemeFlow = MutableStateFlow(ThemePreference.LIGHT)
 
         // 3. Mock'a davranışını öğret:
 

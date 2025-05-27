@@ -85,6 +85,7 @@ dependencies {
     implementation(libs.androidx.ui.tooling.preview)
     implementation(libs.androidx.material3)
     implementation("androidx.compose.material:material-icons-extended:1.6.7") // Versiyonu kontrol edin
+    implementation ("com.google.android.material:material:1.11.0")
 
     // --- Navigation ---
     implementation("androidx.navigation:navigation-compose:2.7.7") // Versiyonu kontrol edin
@@ -158,6 +159,9 @@ dependencies {
 
     //Admob
     implementation("com.google.android.gms:play-services-ads:23.1.0")
+
+    implementation("androidx.core:core-splashscreen:1.0.1")
+
 
     // Test Hilt
     //testImplementation("com.google.dagger:hilt-android-testing:2.51")

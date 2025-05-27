@@ -8,6 +8,7 @@ import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
+import androidx.compose.material.icons.filled.CloudOff
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
@@ -24,14 +25,19 @@ import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.navigation.NavController
 import com.technovix.quiznova.R
-import com.technovix.quiznova.ui.components.*
+import com.technovix.quiznova.ui.components.common.ExitConfirmationDialog
+import com.technovix.quiznova.ui.components.common.GenericEmptyStateView
+import com.technovix.quiznova.ui.components.common.GenericErrorStateView
+import com.technovix.quiznova.ui.components.common.GenericLoadingStateView
+import com.technovix.quiznova.ui.screen.quiz.components.QuestionContent
+import com.technovix.quiznova.ui.screen.quiz.components.QuizResultContent
 import com.technovix.quiznova.ui.theme.*
 import com.technovix.quiznova.ui.viewmodel.QuizViewModel
 import com.technovix.quiznova.util.Resource
 import com.technovix.quiznova.util.ThemePreference
 import timber.log.Timber
 
-@OptIn(ExperimentalMaterial3Api::class, ExperimentalAnimationApi::class)
+@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun QuizScreen(
     navController: NavController,
@@ -175,21 +181,31 @@ fun QuizScreen(
                     label = "QuizScreenContentSwitch"
                 ) { questionsState ->
                     when (questionsState) {
-                        is Resource.Loading -> LoadingAnimationQuiz(modifier = Modifier.align(Alignment.Center))
-                        is Resource.Error -> ErrorViewQuiz(
-                            modifier = Modifier.align(Alignment.Center).padding(32.dp),
-                            message = questionsState.message ?: stringResource(R.string.error_loading_questions),
-                            onRetry = viewModel::retryLoadQuestions
-                        )
+                        is Resource.Loading -> {
+                            GenericLoadingStateView( // ESKİ LoadingAnimationQuiz YERİNE
+                                loadingText = stringResource(R.string.loading_questions),
+                                modifier = Modifier.align(Alignment.Center)
+                            )
+                        }
+                        is Resource.Error -> {
+                            GenericErrorStateView( // ESKİ ErrorViewQuiz YERİNE
+                                modifier = Modifier.align(Alignment.Center),
+                                errorMessage = questionsState.message ?: stringResource(R.string.error_loading_questions),
+                                onRetryClick = viewModel::retryLoadQuestions
+                            )
+                        }
                         is Resource.Success -> {
                             val questions = questionsState.data
                             if (questions.isNullOrEmpty()) {
-                                EmptyQuestionsView(
-                                    modifier = Modifier.align(Alignment.Center).padding(32.dp),
-                                    onBack = {
+                                GenericEmptyStateView( // ESKİ EmptyQuestionsView YERİNE
+                                    title = stringResource(R.string.quiz_no_questions_found),
+                                    icon = Icons.Filled.CloudOff, // Veya istediğiniz başka bir ikon
+                                    actionButtonText = stringResource(R.string.back),
+                                    onActionButtonClick = {
                                         Timber.tag("QuizScreen").d("EmptyQuestionsView: Navigating back.")
-                                        navController.popBackStack() // Boş soru durumunda direkt geri git
-                                    }
+                                        navController.popBackStack()
+                                    },
+                                    modifier = Modifier.align(Alignment.Center)
                                 )
                             } else {
                                 AnimatedContent(
@@ -246,10 +262,10 @@ fun QuizScreen(
                                             )
                                         } else {
                                             Timber.tag("QuizScreen").e("Error: Current question is null unexpectedly when quiz is not finished.")
-                                            ErrorViewQuiz(
-                                                modifier = Modifier.align(Alignment.Center).padding(32.dp),
-                                                message = stringResource(R.string.error_unexpected_question),
-                                                onRetry = { viewModel.restartQuiz() }
+                                            GenericErrorStateView( // Beklenmedik soru hatası için de genel hata görünümü
+                                                modifier = Modifier.align(Alignment.Center),
+                                                errorMessage = stringResource(R.string.error_unexpected_question),
+                                                onRetryClick = { viewModel.restartQuiz() }
                                             )
                                         }
                                     }

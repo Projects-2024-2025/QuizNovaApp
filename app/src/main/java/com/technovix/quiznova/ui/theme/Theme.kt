@@ -2,7 +2,6 @@ package com.technovix.quiznova.ui.theme
 
 import android.app.Activity
 import android.os.Build
-import androidx.compose.foundation.isSystemInDarkTheme
 import androidx.compose.material3.*
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.SideEffect
@@ -14,7 +13,7 @@ import androidx.compose.ui.platform.LocalView
 import androidx.core.view.WindowCompat
 import com.technovix.quiznova.util.ThemePreference
 
-
+// DarkColorScheme ve LightColorScheme tanımlarınız burada olmalı (önceki kodunuzdaki gibi)
 private val DarkColorScheme = darkColorScheme(
     primary = VibrantPurple,
     onPrimary = Color.White,
@@ -73,6 +72,8 @@ private val LightColorScheme = lightColorScheme(
     inverseOnSurface = TextColorDark
 )
 
+
+// lightAppBackgroundGradient ve darkAppBackgroundGradient fonksiyonlarınız burada (değişiklik yok)
 @Composable
 fun lightAppBackgroundGradient(): Brush {
     val primary = MaterialTheme.colorScheme.primary
@@ -83,10 +84,10 @@ fun lightAppBackgroundGradient(): Brush {
 
     return Brush.verticalGradient(
         colors = listOf(
-             primary.copy(alpha = 0.4f),
-             secondary.copy(alpha = 0.3f),
-             surfaceVariant.copy(alpha = 0.6f),
-             background.copy(alpha = 0.9f)
+            primary.copy(alpha = 0.4f),
+            secondary.copy(alpha = 0.3f),
+            surfaceVariant.copy(alpha = 0.6f),
+            background.copy(alpha = 0.9f)
         ),
         startY = 0f,
     )
@@ -109,9 +110,10 @@ fun darkAppBackgroundGradient(): Brush {
     )
 }
 
+
 @Composable
 fun QuizAppTheme(
-    themePreference: ThemePreference = ThemePreference.LIGHT,
+    themePreference: ThemePreference = ThemePreference.LIGHT, // themePreference parametresi olarak alınıyor
     dynamicColor: Boolean = false,
     content: @Composable () -> Unit
 ) {
@@ -131,17 +133,19 @@ fun QuizAppTheme(
     val view = LocalView.current
     if (!view.isInEditMode) {
         SideEffect {
-            val window = (view.context as Activity).window
-            window.statusBarColor = colorScheme.background.toArgb()
+            val window = (view.context as? Activity)?.window ?: return@SideEffect // Güvenli cast
+            window.statusBarColor = colorScheme.background.toArgb() // Veya istediğiniz başka bir renk
             WindowCompat.getInsetsController(window, view).isAppearanceLightStatusBars = !darkTheme
-            window.navigationBarColor = colorScheme.background.toArgb()
+            window.navigationBarColor = colorScheme.background.toArgb() // Veya istediğiniz başka bir renk
             WindowCompat.getInsetsController(window, view).isAppearanceLightNavigationBars = !darkTheme
         }
     }
 
+    val responsiveTypography = getResponsiveTypography(baseTypography = Typography) // <<<--- DEĞİŞİKLİK
+
     MaterialTheme(
         colorScheme = colorScheme,
-        typography = Typography,
+        typography = responsiveTypography,
         shapes = Shapes,
         content = content
     )

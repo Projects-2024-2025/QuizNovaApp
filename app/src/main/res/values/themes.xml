@@ -1,4 +1,28 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-    <style name="Theme.QuizNova" parent="android:Theme.Material.Light.NoActionBar" />
+
+    <!-- A. ANA UYGULAMA TEMASI (Bu zaten vardı) -->
+    <style name="Theme.QuizNova" parent="Theme.Material3.DayNight.NoActionBar">
+        <!-- Ana temanız için diğer özelleştirmeler (Compose temanız zaten çoğunu hallediyor) -->
+    </style>
+
+    <!-- B. YENİ: ANDROID 12+ SPLASH SCREEN API İÇİN BAŞLANGIÇ TEMASI -->
+    <!-- BU STİL, MANIFEST'TE MainActivity'ye ATANACAK OLAN STİLDİR. -->
+    <style name="Theme.App.Starting" parent="Theme.SplashScreen">
+        <!-- 1. Sistem Splash Ekranının Arka Plan Rengi: -->
+        <item name="windowSplashScreenBackground">@color/purple_700</item>
+
+        <!-- 2. Sistem Splash Ekranında Gösterilecek İkon:
+             Uygulamanızın launcher ikonu (@mipmap/ic_launcher) veya
+             logonuzun @drawable altındaki basit, statik bir versiyonu olabilir.
+             Bu, sizin animasyonlu Composable splash'ınızdan ÖNCE gösterilir. -->
+        <item name="windowSplashScreenAnimatedIcon">@mipmap/ic_launcher</item>
+        <!-- <item name="windowSplashScreenIconBackgroundColor">@android:color/transparent</item> --> <!-- Opsiyonel -->
+
+
+        <!-- 3. Sistem Splash Ekranı Bittikten Sonra Uygulanacak Ana Tema:
+             Bu, MainActivity'nizin normalde kullanacağı tema olmalı. -->
+        <item name="postSplashScreenTheme">@style/Theme.QuizNova</item>
+    </style>
+
 </resources>

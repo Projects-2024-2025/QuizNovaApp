@@ -122,4 +122,7 @@
     </string>
     <string name="error_offline_no_cached_categories">Error offline no cached categories</string>
     <string name="error_categories_unknown_flow">Error categories unknown flow</string>
+    <string name="error_categories_empty_from_server">Error categories empty from server</string>
+    <string name="error_categories_fetch_failed">Error categories fetch failed</string>
+    <string name="quiz_answer_not_given">Quiz answer not given</string>
 </resources>

@@ -2,7 +2,6 @@ package com.technovix.quiznova.ui.screen.category
 
 import androidx.compose.animation.*
 import androidx.compose.animation.core.*
-import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.background
 import androidx.compose.foundation.gestures.detectTransformGestures
 import androidx.compose.foundation.layout.*
@@ -23,21 +22,19 @@ import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.navigation.NavController
 import com.technovix.quiznova.R
 import com.technovix.quiznova.data.local.entity.CategoryEntity
-// --- Component importları güncellendi ---
-import com.technovix.quiznova.ui.components.CategoryCarousel // veya kendi component paketiniz
-import com.technovix.quiznova.ui.components.CategoryGridRegular // <<<--- CategoryGridStaggered yerine
-import com.technovix.quiznova.ui.components.EmptyStateView
-import com.technovix.quiznova.ui.components.ErrorView
-import com.technovix.quiznova.ui.components.LoadingAnimation
-// --- Diğer importlar ---
+import com.technovix.quiznova.ui.components.common.GenericEmptyStateView
+import com.technovix.quiznova.ui.components.common.GenericErrorStateView
+import com.technovix.quiznova.ui.components.common.GenericLoadingStateView
 import com.technovix.quiznova.ui.navigation.Screen
+import com.technovix.quiznova.ui.screen.category.components.CategoryCarousel
+import com.technovix.quiznova.ui.screen.category.components.CategoryGridRegular
 import com.technovix.quiznova.util.ThemePreference
 import com.technovix.quiznova.ui.theme.*
 import com.technovix.quiznova.ui.viewmodel.CategoryViewModel
 import com.technovix.quiznova.util.Resource
 import timber.log.Timber
 
-@OptIn(ExperimentalMaterial3Api::class, ExperimentalFoundationApi::class)
+@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun CategoryScreen(
     navController: NavController,
@@ -155,12 +152,21 @@ fun CategoryScreen(
                         }
                     }
             ) {
-                when (categoriesState) {
-                    is Resource.Loading -> LoadingAnimation(modifier = Modifier.align(Alignment.Center))
+                when (val currentState = categoriesState) {
+                    is Resource.Loading -> {
+                        GenericLoadingStateView( // ESKİ LoadingAnimation YERİNE
+                            loadingText = stringResource(R.string.loading_categories),
+                            modifier = Modifier.align(Alignment.Center)
+                        )
+                    }
                     is Resource.Success -> {
                         val categories = (categoriesState as Resource.Success<List<CategoryEntity>>).data
                         if (categories.isNullOrEmpty()) {
-                            EmptyStateView(modifier = Modifier.align(Alignment.Center)) // Padding'i component içine taşıdık
+                            GenericEmptyStateView( // ESKİ EmptyStateView YERİNE
+                                title = stringResource(R.string.category_empty_state),
+                                icon = Icons.Filled.SentimentDissatisfied, // Veya istediğiniz başka bir ikon
+                                modifier = Modifier.align(Alignment.Center)
+                            )
                         } else {
                             AnimatedContent(
                                 targetState = isGridViewVisible,
@@ -186,11 +192,13 @@ fun CategoryScreen(
                             }
                         }
                     }
-                    is Resource.Error -> ErrorView(
-                        modifier = Modifier.align(Alignment.Center), // Padding'i component içine taşıdık
-                        message = (categoriesState as Resource.Error<List<CategoryEntity>>).message ?: stringResource(R.string.error_unknown),
-                        onRetry = { viewModel.refreshCategories() }
-                    )
+                    is Resource.Error -> {
+                        GenericErrorStateView( // ESKİ ErrorView YERİNE
+                            modifier = Modifier.align(Alignment.Center),
+                            errorMessage = currentState.message ?: stringResource(R.string.error_unknown),
+                            onRetryClick = { viewModel.refreshCategories() }
+                        )
+                    }
                 } // end when
             } // end İçerik Box
         } // end Arka Plan Box

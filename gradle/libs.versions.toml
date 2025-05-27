@@ -19,6 +19,7 @@ hilt = "2.51.1"
 testRunner = "1.5.2"
 ksp = "1.9.23-1.0.19"
 navigationTesting = "2.8.9"
+material3 = "1.2.1"
 
 [libraries]
 androidx-core-ktx = { group = "androidx.core", name = "core-ktx", version.ref = "coreKtx" }
@@ -34,7 +35,7 @@ androidx-ui-tooling = { group = "androidx.compose.ui", name = "ui-tooling" }
 androidx-ui-tooling-preview = { group = "androidx.compose.ui", name = "ui-tooling-preview" }
 androidx-ui-test-manifest = { group = "androidx.compose.ui", name = "ui-test-manifest" }
 androidx-ui-test-junit4 = { group = "androidx.compose.ui", name = "ui-test-junit4" }
-androidx-material3 = { group = "androidx.compose.material3", name = "material3" }
+androidx-material3 = { group = "androidx.compose.material3", name = "material3", version.ref = "material3" }
 kotlinx-coroutines-test = { group = "org.jetbrains.kotlinx", name = "kotlinx-coroutines-test", version.ref = "coroutines" }
 mockk-android = { group = "io.mockk", name = "mockk-android", version.ref = "mockk" }
 mockk-agent-jvm = { group = "io.mockk", name = "mockk-agent-jvm", version.ref = "mockk" }
