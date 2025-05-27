@@ -59,26 +59,6 @@ fun QuizScreen(
         else -> 24.dp
     }
 
-    // Yaşam döngüsü gözlemcisi - İsteğe bağlı: Ekran tekrar aktif olduğunda reklam yüklemeyi deneyebilir
-    /*
-    val lifecycleOwner = LocalLifecycleOwner.current
-    DisposableEffect(lifecycleOwner, activity, uiState.isQuizFinished) {
-        val observer = LifecycleEventObserver { _, event ->
-            if (event == Lifecycle.Event.ON_RESUME) {
-                if (uiState.isQuizFinished && activity != null) {
-                    // viewModel.loadInterstitialAd() // ViewModel'de public yapılması veya
-                                                    // zaten periyodik yükleme yapıyorsa gerekmeyebilir.
-                    Timber.tag("QuizScreen").d("ON_RESUME & quiz finished: Consider loading ad if not already.")
-                }
-            }
-        }
-        lifecycleOwner.lifecycle.addObserver(observer)
-        onDispose {
-            lifecycleOwner.lifecycle.removeObserver(observer)
-        }
-    }
-    */
-
     // Quiz DEVAM EDİYORKEN sistem geri tuşu basılırsa -> Çıkış onayı göster
     BackHandler(enabled = !uiState.isQuizFinished && !showExitDialog) {
         Timber.tag("QuizScreen").d("BackHandler: Quiz in progress. Showing exit dialog.")

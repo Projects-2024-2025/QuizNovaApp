@@ -1,56 +1,12 @@
-package com.technovix.quiznova.ui.components // veya ui.screen.category.components
+package com.technovix.quiznova.ui.components
 
-import androidx.compose.foundation.layout.*
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.*
-import androidx.compose.material3.*
-import androidx.compose.runtime.*
-import androidx.compose.ui.Alignment
-import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.vector.ImageVector
-import androidx.compose.ui.platform.LocalConfiguration
-import androidx.compose.ui.res.stringResource
-import androidx.compose.ui.unit.Dp
-import androidx.compose.ui.unit.dp
-import com.airbnb.lottie.compose.*
-import com.technovix.quiznova.R // Kendi R dosyanızın importu
-
-
-
-// Yükleme animasyonu
-@Composable
-fun LoadingAnimation(modifier: Modifier = Modifier) {
-    val configuration = LocalConfiguration.current
-    val screenWidthDp: Dp = configuration.screenWidthDp.dp
-    val isCompact = screenWidthDp < 380.dp
-
-    val lottieSize = if (isCompact) 150.dp else 180.dp
-    val textStyle = if (isCompact) MaterialTheme.typography.bodyMedium else MaterialTheme.typography.bodyLarge
-
-    val composition by rememberLottieComposition(LottieCompositionSpec.RawRes(R.raw.lottie_loading))
-    Column(
-        horizontalAlignment = Alignment.CenterHorizontally,
-        verticalArrangement = Arrangement.Center,
-        modifier = modifier.padding(16.dp).fillMaxSize()
-    ) {
-        LottieAnimation(
-            composition = composition,
-            iterations = LottieConstants.IterateForever,
-            modifier = Modifier.size(lottieSize)
-        )
-        Spacer(modifier = Modifier.height(16.dp))
-        Text(
-            stringResource(R.string.loading_categories),
-            color = MaterialTheme.colorScheme.onSurfaceVariant,
-            style = textStyle
-        )
-    }
-}
 
 // Kategori İkonlarını Eşleştirme Fonksiyonu
 fun getIconForCategory(categoryName: String): ImageVector {
-    // İkon eşleştirmesi yapılırken orijinal, tam ismi kullanmak daha güvenli olabilir.
     val nameToCheck = categoryName // Veya gerekirse burada da kısaltma yapılabilir, ama genellikle gerekmez.
     return when {
         nameToCheck.contains("Knowledge", ignoreCase = true) -> Icons.Filled.AutoStories

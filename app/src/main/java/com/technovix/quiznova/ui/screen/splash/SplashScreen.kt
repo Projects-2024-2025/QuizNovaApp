@@ -41,7 +41,6 @@ fun SplashScreen(navController: NavController) {
     val splashDuration = 2800L
     val logoAnimationDelay = 300L
     val logoAnimationDuration = 1200
-    val delayTime = 1500L
 
     LaunchedEffect(key1 = true) {
         delay(splashDuration)

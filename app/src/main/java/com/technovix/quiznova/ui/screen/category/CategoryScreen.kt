@@ -47,11 +47,6 @@ fun CategoryScreen(
     val zoomOutThreshold = 0.85f
     val zoomInThreshold = 1.15f
 
-    val configuration = LocalConfiguration.current // EKLENDİ
-    val screenWidthDp = configuration.screenWidthDp.dp // EKLENDİ
-
-    val screenContentPadding = if (screenWidthDp < 360.dp) 8.dp else 0.dp
-
     val backgroundBrush = if (currentTheme == ThemePreference.DARK) {
         darkAppBackgroundGradient()
     } else {
