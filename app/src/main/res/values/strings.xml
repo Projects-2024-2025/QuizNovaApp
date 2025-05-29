@@ -62,7 +62,7 @@
     <string name="menu_settings_actual">Settings</string> <!-- Settings text in menu -->
 
     <string name="about_screen_title">About QuizNova</string>
-    <string name="about_version">Version %1$s (Build %2$d)</string>
+    <string name="about_version">Version %1$s</string>
     <string name="about_description">QuizNova is a fun and engaging quiz application designed to test your knowledge across a wide variety of categories. Enjoy learning new things and challenging yourself!</string>
     <string name="about_developed_by">Developed by:</string>
 
@@ -96,33 +96,71 @@
         <string name="categories_unexpected_server_error_code">Unexpected server error fetching categories (%d).</string>
         <string name="categories_network_error_fetch">Network Connection Error. Could not fetch categories.</string>
 
-    <string name="privacy_policy_title">Privacy Policy</string>
-    <string name="privacy_policy_text">
-    <![CDATA[
-    <b>Your Privacy Matters</b><br/><br/>
-    QuizNova (\"we,\" \"us,\" or \"our\") operates the QuizNova mobile application (the \"Service\").
-    This page informs you of our policies regarding the collection, use, and disclosure of personal data when you use our Service and the choices you have associated with that data.
-    <br/><br/>
-    <b>Information Collection and Use</b><br/>
-    We do not collect any personally identifiable information from users of QuizNova. The app functions locally on your device and does not require you to submit personal data.
-    <br/><br/>
-    <b>Quiz Data</b><br/>
-    Quiz questions and categories are fetched from the Open Trivia Database (https://opentdb.com). Your quiz progress and scores are stored locally on your device and are not transmitted to us or any third parties.
-    <br/><br/>
-    <b>Third-Party Services</b><br/>
-    The app may display advertisements through Google AdMob. AdMob may collect anonymous data for ad personalization. Please refer to Google\'s Privacy & Terms for more information on how Google uses data when you use our partners\' sites or apps.
-    <br/><br/>
-    <b>Changes to This Privacy Policy</b><br/>
-    We may update our Privacy Policy from time to time. We will notify you of any changes by posting the new Privacy Policy on this page.
-    You are advised to review this Privacy Policy periodically for any changes. Changes to this Privacy Policy are effective when they are posted on this page.
-    <br/><br/>
-    <b>Contact Us</b><br/>
-    If you have any questions about this Privacy Policy, please contact us at: your.email@example.com
-    ]]>
-    </string>
+
     <string name="error_offline_no_cached_categories">Error offline no cached categories</string>
     <string name="error_categories_unknown_flow">Error categories unknown flow</string>
     <string name="error_categories_empty_from_server">Error categories empty from server</string>
     <string name="error_categories_fetch_failed">Error categories fetch failed</string>
     <string name="quiz_answer_not_given">Quiz answer not given</string>
+
+    <string name="privacy_policy_title">Privacy Policy</string>
+    <!-- Privacy Policy Text - ENGLISH -->
+    <string name="privacy_policy_text">
+    <![CDATA[
+    <b>Last Updated: 29.05.2025</b><br/><br/>
+
+    MindosTech (\"us\", \"we\", or \"our\") operates the QuizNova mobile application (the \"Service\"). This page informs you of our policies regarding the collection, use, and disclosure of personal data when you use our Service and the choices you have associated with that data.<br/><br/>
+
+    By using the Service, you agree to the collection and use of information in accordance with this policy.<br/><br/>
+
+    <b>1. Information Collection and Use</b><br/>
+    QuizNova does not directly collect any personally identifiable information (PII) from its users (e.g., name, email address, location). The application functions locally on your device and does not require you to submit personal data.<br/>
+    <ul>
+        <li><b>Quiz Data:</b> Quiz questions and categories are fetched from the Open Trivia Database (https://opentdb.com), a publicly available API. Your quiz progress, selected answers, and scores are stored locally on your device only. This data is not transmitted to us or any third parties.</li>
+        <li><b>Theme Preferences:</b> Your chosen application theme (Light/Dark) is stored locally on your device.</li>
+        <li><b>Automatically Collected Information (for Advertisements):</b> Our Service uses Google AdMob to display advertisements. Google AdMob may collect anonymous data (such as advertising ID, device type, non-precise location, etc.) to serve interest-based advertisements. For more information on how Google uses data when you use our partners\' sites or apps, please visit <a href="https://policies.google.com/technologies/partner-sites">Google\'s Privacy & Terms page</a>. You may have options to limit or opt-out of personalized advertising through your device settings.</li>
+    </ul><br/>
+
+    <b>2. Data Sharing</b><br/>
+    We do not share any data we collect or that is stored on your device with third parties, other than as described above for Google AdMob.<br/><br/>
+
+    <b>3. Data Retention and Security</b><br/>
+    All data, such as your quiz progress and theme preferences, is stored solely on your device. The security of this data depends on the overall security of your device. As we do not store any user data on our servers, the risk of a data breach from our side is minimal.<br/><br/>
+
+    <b>4. Children\'s Privacy</b><br/>
+    Our Service does not address anyone under the age of 13. We do not knowingly collect personally identifiable information from children under 13. If you are a parent or guardian and you are aware that your child has provided us with personal information, please contact us.<br/><br/>
+
+    <b>5. Changes to This Privacy Policy</b><br/>
+    We may update our Privacy Policy from time to time. We will notify you of any changes by posting the new Privacy Policy on this page. You are advised to review this Privacy Policy periodically for any changes. Changes to this Privacy Policy are effective when they are posted on this page.<br/><br/>
+
+    <b>6. Contact Us</b><br/>
+    If you have any questions about this Privacy Policy, please contact us at: <b>mindostech.dev@gmail.com</b><br/><br/>
+        <br/><br/>
+        <br/><br/>
+    ]]>
+
+
+</string>
+
+
+    <!-- Contact Us -->
+<string name="about_contact_us">Contact Us</string>
+    <!-- developer_email string'i zaten vardı, onu kullanabiliriz -->
+    <!-- <string name="developer_email">[Your Email Address Here]</string> -->
+
+    <!-- Data Source -->
+<string name="about_data_source_title">Data Source</string>
+<string name="about_data_source_text">Quiz questions and categories are provided by the Open Trivia Database (opentdb.com).</string>
+
+    <!-- Privacy Policy Link Text -->
+<string name="about_privacy_policy_link_text">Read our Privacy Policy</string>
+
+    <!-- Copyright - Mevcut about_copyright_text string'ini kullanabiliriz, sadece içindeki developer_name string'inin doğru olduğundan emin ol. -->
+    <!-- Eğer yoksa: -->
+<string name="about_copyright_text">© %1$d %2$s. All rights reserved.</string> <!-- %1$d year, %2$s developer name -->
+
+    <!-- Mevcut string'leri kontrol et: about_version, app_name, developer_name, developer_email -->
+    <!-- Örnek olarak developer_name ve developer_email için: -->
+<string name="developer_name">MindosTech</string> <!-- Değiştirilebilir -->
+<string name="developer_email">mindostech.dev@gmail.com</string> <!-- E-postanızı girin -->
 </resources>

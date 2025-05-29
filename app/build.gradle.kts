@@ -6,17 +6,17 @@ plugins {
 }
 
 android {
-    namespace = "com.technovix.quiznova"
+    namespace = "com.mindostech.quiznova"
     compileSdk = 35
 
     defaultConfig {
-        applicationId = "com.technovix.quiznova"
+        applicationId = "com.mindostech.quiznova"
         minSdk = 24
         targetSdk = 35
         versionCode = 1
         versionName = "1.0"
 
-        testInstrumentationRunner = "com.technovix.quiznova.HiltTestRunner"
+        testInstrumentationRunner = "com.mindostech.quiznova.HiltTestRunner"
         vectorDrawables {
             useSupportLibrary = true
         }
