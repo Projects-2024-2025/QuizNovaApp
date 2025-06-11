@@ -20,41 +20,33 @@ import timber.log.Timber
 
 @Composable
 fun AppNavigation(
-    // Tema state'i ve değiştiricisi parametre olarak eklendi
-    themePreference: ThemePreference,
-    //onThemeChange: (ThemePreference) -> Unit
+    themePreference: ThemePreference
 ) {
     val navController = rememberNavController()
-    // Animasyon ayarları (isteğe bağlı)
     val animationSpec = tween<IntOffset>(durationMillis = 400)
     val fadeSpec = tween<Float>(durationMillis = 400)
 
     NavHost(
         navController = navController,
         startDestination = Screen.Splash.route,
-        // Navigasyon animasyonları (isteğe bağlı)
         enterTransition = { slideInHorizontally(initialOffsetX = { it }, animationSpec = animationSpec) + fadeIn(fadeSpec) },
         exitTransition = { slideOutHorizontally(targetOffsetX = { -it / 3 }, animationSpec = animationSpec) + fadeOut(fadeSpec) },
         popEnterTransition = { slideInHorizontally(initialOffsetX = { -it }, animationSpec = animationSpec) + fadeIn(fadeSpec) },
         popExitTransition = { slideOutHorizontally(targetOffsetX = { it / 3 }, animationSpec = animationSpec) + fadeOut(fadeSpec) }
     ) {
-        // Splash Ekranı
         composable(
             route = Screen.Splash.route,
-            exitTransition = { fadeOut(animationSpec = tween(500)) } // Splash'tan çıkarken sadece fade out
+            exitTransition = { fadeOut(animationSpec = tween(500)) }
         ) {
             SplashScreen(navController = navController)
         }
 
-        // Kategori Ekranı
         composable(Screen.Category.route) {
-            // CategoryScreen'e tema parametreleri iletiliyor
             CategoryScreen(
                 navController = navController
             )
         }
 
-        // Quiz Ekranı
         composable(
             route = Screen.Quiz.route,
             arguments = listOf(
@@ -64,14 +56,12 @@ fun AppNavigation(
         ) { backStackEntry ->
             Timber.tag("AppNavigation")
                 .d("QuizScreen composable entered. Args: %s", backStackEntry.arguments)
-            // val categoryId = backStackEntry.arguments?.getInt("categoryId") ?: 0 // Gerekirse kullan
             val categoryName = backStackEntry.arguments?.getString("categoryName") ?: "Quiz"
 
-            // QuizScreen'e tema parametresi iletiliyor
             QuizScreen(
                 navController = navController,
                 categoryName = categoryName,
-                currentTheme = themePreference // Mevcut tema state'i
+                currentTheme = themePreference
             )
         }
         composable(Screen.Settings.route) {
@@ -80,12 +70,10 @@ fun AppNavigation(
             )
         }
 
-        // About Screen
         composable(Screen.About.route) {
             AboutScreen(navController = navController)
         }
 
-        // Privacy Policy Screen
         composable(Screen.PrivacyPolicy.route) {
             PrivacyPolicyScreen(navController = navController)
         }

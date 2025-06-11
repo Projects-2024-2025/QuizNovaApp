@@ -18,11 +18,10 @@ import org.junit.Test
 
 class QuizLocalDataSourceImplTest {
 
-    // MockKRule, @MockK ile işaretli alanları otomatik başlatır
     @get:Rule
     val mockkRule = MockKRule(this)
 
-    @MockK  //QuizDao'yu mock'la
+    @MockK
     private lateinit var dao: QuizDao
 
     private lateinit var localDataSource: QuizLocalDataSourceImpl
@@ -36,14 +35,13 @@ class QuizLocalDataSourceImplTest {
     fun `insertQuestions DAO'nun insertQuestions fonksiyonunu çağırır`() = runTest {
         // Arrange
         val questions = listOf(mockk<QuestionEntity>())
-        // coVerify kullanacağımız için coEvery'e gerek yok (eğer dönüş değeri test etmiyorsak)
-        // Ancak suspend fonksiyonları mocklarken Unit dönseler bile boş bir coEvery eklemek bazen gerekir.
+
         coEvery { dao.insertQuestions(any()) } returns Unit
 
         // Act
         localDataSource.insertQuestions(questions)
 
-        // Assert: DAO fonksiyonunun doğru parametreyle çağrıldığını doğrula
+        // Assert
         coVerify(exactly = 1) { dao.insertQuestions(questions) }
     }
 
@@ -58,7 +56,7 @@ class QuizLocalDataSourceImplTest {
         // Act
         val result = localDataSource.getQuestionsByCategory(category, limit)
 
-        // Assert: Sonucun DAO'dan gelene eşit olduğunu doğrula
+        // Assert
         assertThat(result).isEqualTo(expectedQuestions)
         coVerify(exactly = 1) { dao.getQuestionsByCategory(category, limit) }
     }
@@ -108,17 +106,14 @@ class QuizLocalDataSourceImplTest {
     fun `getAllCategories DAO'dan gelen Flow'u döndürür`() = runTest {
         // Arrange
         val expectedCategories = listOf(mockk<CategoryEntity>())
-        // Flow döndüren fonksiyonları mocklarken flowOf kullanırız
         coEvery { dao.getAllCategories() } returns flowOf(expectedCategories)
 
         // Act
         val resultFlow = localDataSource.getAllCategories()
-        val result = resultFlow.first() // Flow'dan ilk değeri al
+        val result = resultFlow.first()
 
         // Assert
         assertThat(result).isEqualTo(expectedCategories)
-        // DAO fonksiyonunun çağrıldığını doğrula (coVerify Flow için doğrudan çalışmaz ama çağrıldığını biliriz)
-        // İstersen coVerify(exactly = 1) { dao.getAllCategories() } ekleyebilirsin ama testin ana odağı dönen değer.
     }
 
     @Test

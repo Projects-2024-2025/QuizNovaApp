@@ -34,7 +34,7 @@ import com.mindostech.quiznova.ui.components.AppPrimaryButton
 @Composable
 fun GenericErrorStateView(
     modifier: Modifier = Modifier,
-    @RawRes lottieResId: Int = R.raw.lottie_error, // Varsayılan Lottie
+    @RawRes lottieResId: Int = R.raw.lottie_error,
     lottieSizeSmall: Dp = 170.dp,
     lottieSizeLarge: Dp = 200.dp,
     errorTitle: String = stringResource(R.string.error_oops),
@@ -81,7 +81,7 @@ fun GenericErrorStateView(
             color = MaterialTheme.colorScheme.onSurfaceVariant
         )
         Spacer(modifier = Modifier.height(40.dp))
-        AppPrimaryButton( // Kendi özel butonunuzu kullanın
+        AppPrimaryButton(
             onClick = onRetryClick,
             contentPadding = PaddingValues(horizontal = buttonPaddingHorizontal, vertical = buttonPaddingVertical)
         ) {

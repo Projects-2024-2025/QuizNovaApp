@@ -41,7 +41,7 @@ fun HorizontalPagerIndicator(
         verticalAlignment = Alignment.CenterVertically,
     ) {
         val currentPage = pagerState.currentPage
-        if (pagerState.pageCount > 0) { // Sayfa sayısı 0'dan büyükse göster
+        if (pagerState.pageCount > 0) {
             repeat(pagerState.pageCount) { iteration ->
                 val width by animateDpAsState(
                     targetValue = if (currentPage == iteration) activeIndicatorWidth else indicatorWidth,

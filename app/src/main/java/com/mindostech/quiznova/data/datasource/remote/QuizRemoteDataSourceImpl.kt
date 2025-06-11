@@ -9,6 +9,7 @@ import com.mindostech.quiznova.util.Resource
 import dagger.hilt.android.qualifiers.ApplicationContext
 import java.io.IOException
 import retrofit2.HttpException
+import timber.log.Timber
 import javax.inject.Inject
 
 class QuizRemoteDataSourceImpl @Inject constructor(
@@ -24,7 +25,7 @@ class QuizRemoteDataSourceImpl @Inject constructor(
                     0 -> Resource.Success(triviaResponse)
                     1 -> Resource.Error(context.getString(R.string.api_error_no_results))
                     2 -> Resource.Error(context.getString(R.string.api_error_invalid_parameter))
-                    3 -> Resource.Error(context.getString(R.string.api_error_token_not_found)) // Bu uygulamada token kullanmıyoruz ama API dokümanında var
+                    3 -> Resource.Error(context.getString(R.string.api_error_token_not_found))
                     4 -> Resource.Error(context.getString(R.string.api_error_token_empty))
                     else -> Resource.Error(context.getString(R.string.api_error_unknown_response_code, triviaResponse.responseCode))
                 }
@@ -41,7 +42,7 @@ class QuizRemoteDataSourceImpl @Inject constructor(
         } catch (e: IOException) {
             Resource.Error(context.getString(R.string.network_error_connection))
         } catch (e: Exception) {
-            println("QuizRemoteDataSource Hata: $e")
+            Timber.e("QuizRemoteDataSource Hata: $e")
             Resource.Error(e.localizedMessage ?: context.getString(R.string.network_error_questions_generic))
         }
     }
@@ -64,7 +65,7 @@ class QuizRemoteDataSourceImpl @Inject constructor(
         } catch (e: IOException) {
             Resource.Error(context.getString(R.string.categories_network_error_fetch))
         } catch (e: Exception) {
-            println("QuizRemoteDataSource Kategori Hatası: $e")
+            Timber.e("QuizRemoteDataSource Kategori Hatası: $e")
             Resource.Error(e.localizedMessage ?: context.getString(R.string.network_error_categories_generic))
         }
     }

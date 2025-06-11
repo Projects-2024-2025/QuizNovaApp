@@ -24,39 +24,37 @@ class QuizRemoteDataSourceImplTest {
     @MockK
     private lateinit var api: OpenTriviaApi
 
-    @RelaxedMockK // Context için de bir mock oluşturun
+    @RelaxedMockK
     lateinit var mockContext: Context
 
     private lateinit var dataSource: QuizRemoteDataSourceImpl
 
     @Before
     fun setUp() {
-        // Annotation ile oluşturulan mock'ları başlat
-        io.mockk.MockKAnnotations.init(this, relaxUnitFun = true)  //relaxUnitFun = true, Unit dönen fonksiyonları otomatik mock'lar
+        io.mockk.MockKAnnotations.init(this, relaxUnitFun = true)
         dataSource = QuizRemoteDataSourceImpl(mockContext, api)
     }
 
     @Test
     fun `getQuestions API başarılı olduğunda Success döner`() = runTest {
-        // Arrange: API'nin başarılı bir yanıt döndüreceğini ayarla
+        // Arrange
         val mockQuestionDto = mockk<QuestionDto>()
         val mockResponseDto = OpenTriviaResponse(responseCode = 0, results = listOf(mockQuestionDto))
         val successResponse: Response<OpenTriviaResponse> = Response.success(mockResponseDto)
         coEvery { api.getQuestions(any(), any(), any(), any()) } returns successResponse
 
-        // Act: DataSource fonksiyonunu çağır
+        // Act
         var result = dataSource.getQuestions(10, null, null, "multiple")
 
-        // Assert: Sonucun Success olduğunu ve doğru veriyi içerdiğini kontrol et
+        // Assert
         assertThat(result).isInstanceOf(Resource.Success::class.java)
         assertThat((result as Resource.Success).data).isEqualTo(mockResponseDto)
-        // API fonksiyonunun doğru parametrelerle çağrıldığını doğrula
         coVerify { api.getQuestions(10, null, null, "multiple") }
     }
 
     @Test
     fun `getQuestions API response_code 1 döndürdüğünde Error döner`() = runTest {
-        // Arrange: API'nin response_code=1 ile yanıt döndüreceğini ayarla
+        // Arrange
         val mockResponseDto = OpenTriviaResponse(responseCode = 1, results = emptyList())
         val successResponse: Response<OpenTriviaResponse> = Response.success(mockResponseDto)
         coEvery { api.getQuestions(any(), any(), any(), any()) } returns successResponse
@@ -71,7 +69,7 @@ class QuizRemoteDataSourceImplTest {
 
     @Test
     fun `getQuestions API başarısız yanıt döndürdüğünde Error döner`() = runTest {
-        // Arrange: API'nin başarısız bir HTTP yanıtı döndüreceğini ayarla
+        // Arrange
         val errorResponseBody = """{"error": "Not Found"}""".toResponseBody("application/json".toMediaTypeOrNull())
         val errorResponse: Response<OpenTriviaResponse> = Response.error(404, errorResponseBody)
         coEvery { api.getQuestions(any(), any(), any(), any()) } returns errorResponse
@@ -86,7 +84,7 @@ class QuizRemoteDataSourceImplTest {
 
     @Test
     fun `getQuestions HttpException fırlattığında Error döner`() = runTest {
-        // Arrange: API çağrısının HttpException fırlatacağını ayarla
+        // Arrange
         val errorResponseBody = "".toResponseBody(null)
         val httpException = HttpException(Response.error<Any>(500, errorResponseBody))
         coEvery { api.getQuestions(any(), any(), any(), any()) } throws httpException
@@ -101,7 +99,7 @@ class QuizRemoteDataSourceImplTest {
 
     @Test
     fun `getQuestions IOException fırlattığında Error döner`() = runTest {
-        // Arrange: API çağrısının IOException fırlatacağını ayarla
+        // Arrang
         val ioException = IOException("Network Error")
         coEvery { api.getQuestions(any(), any(), any(), any()) } throws ioException
 

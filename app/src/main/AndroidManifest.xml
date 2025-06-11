@@ -1,9 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:tools="http://schemas.android.com/tools">
-    <!-- app id: ca-app-pub-2085668494796958~5494389279-->
-    <!-- advert id: ca-app-pub-2085668494796958/3359180521-->
-    <!-- test interstitial id: ca-app-pub-3940256099942544/1033173712 -->
     <uses-permission android:name="android.permission.INTERNET" />
     <uses-permission android:name="android.permission.ACCESS_NETWORK_STATE" />
     <application

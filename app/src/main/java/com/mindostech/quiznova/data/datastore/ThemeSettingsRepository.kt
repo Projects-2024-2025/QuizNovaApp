@@ -14,14 +14,12 @@ import java.io.IOException
 import javax.inject.Inject
 import javax.inject.Singleton
 
-// Application context DataStore instance.
 private val Context.dataStore: DataStore<Preferences> by preferencesDataStore(name = "settings")
 
 @Singleton
 class ThemeSettingsRepository @Inject constructor(
     @ApplicationContext private val context: Context
 ) {
-    // Key for storing theme preference.
     private val THEME_PREFERENCE_KEY = stringPreferencesKey("theme_preference")
 
     /**
@@ -31,10 +29,9 @@ class ThemeSettingsRepository @Inject constructor(
     suspend fun saveThemePreference(themePreference: ThemePreference) {
         try {
             context.dataStore.edit { preferences ->
-                preferences[THEME_PREFERENCE_KEY] = themePreference.name // Store enum name as String.
+                preferences[THEME_PREFERENCE_KEY] = themePreference.name
             }
         } catch (e: IOException) {
-            // Handle error, e.g., log it.
             println("Error saving theme: ${e.localizedMessage}")
         }
     }
@@ -45,12 +42,10 @@ class ThemeSettingsRepository @Inject constructor(
      */
     val themePreferenceFlow: Flow<ThemePreference> = context.dataStore.data
         .map { preferences ->
-            // Read stored theme name, default to LIGHT.
             val themeName = preferences[THEME_PREFERENCE_KEY] ?: ThemePreference.LIGHT.name
             try {
                 ThemePreference.valueOf(themeName)
             } catch (e: IllegalArgumentException) {
-                // Fallback to LIGHT if stored value is invalid.
                 ThemePreference.LIGHT
             }
         }

@@ -26,8 +26,6 @@ import com.mindostech.quiznova.ui.viewmodel.SettingsViewModel
 import com.mindostech.quiznova.util.ThemePreference
 import androidx.compose.ui.text.buildAnnotatedString
 import com.mindostech.quiznova.ui.theme.DarkGreyText
-import com.mindostech.quiznova.ui.theme.NearWhite
-import com.mindostech.quiznova.ui.theme.PrivacyPolicyTextDark
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -45,7 +43,7 @@ fun PrivacyPolicyScreen(
 
     val textColor = DarkGreyText
 
-    val policyHtml = stringResource(id = R.string.privacy_policy_text) // Direkt İngilizce string'i kullan
+    val policyHtml = stringResource(id = R.string.privacy_policy_text)
     val annotatedString = buildAnnotatedString {
         append(HtmlCompat.fromHtml(policyHtml, HtmlCompat.FROM_HTML_MODE_LEGACY))
     }
@@ -54,7 +52,7 @@ fun PrivacyPolicyScreen(
         containerColor = Color.Transparent,
         topBar = {
             TopAppBar(
-                title = { Text(stringResource(id = R.string.privacy_policy_title), fontWeight = FontWeight.Bold) }, // Direkt İngilizce başlık
+                title = { Text(stringResource(id = R.string.privacy_policy_title), fontWeight = FontWeight.Bold) },
                 navigationIcon = {
                     IconButton(onClick = { navController.popBackStack() }) {
                         Icon(

@@ -20,6 +20,7 @@ import kotlinx.coroutines.flow.*
 import kotlinx.coroutines.launch
 import timber.log.Timber
 import javax.inject.Inject
+import javax.inject.Named
 
 data class QuizUiState(
     val questions: Resource<List<QuestionEntity>> = Resource.Loading(),
@@ -36,7 +37,8 @@ class QuizViewModel @Inject constructor(
     private val repository: QuizRepository,
     private val savedStateHandle: SavedStateHandle,
     val htmlDecoder: HtmlDecoder,
-    private val application: Application
+    private val application: Application,
+    @Named("InterstitialAdUnitId") private val interstitialAdUnitId: String
 ) : ViewModel() {
 
     companion object {
@@ -46,23 +48,17 @@ class QuizViewModel @Inject constructor(
         const val SCORE_KEY = "score"
         const val IS_SUBMITTED_KEY = "isAnswerSubmitted"
         const val IS_FINISHED_KEY = "isQuizFinished"
-
-        // Bu ID test amaçlıdır:
-        // private const val AD_UNIT_ID_TEST = "ca-app-pub-3940256099942544/1033173712"
-        // Kendi Gerçek ID'niz: "ca-app-pub-2085668494796958/3359180521"
-        private const val AD_UNIT_ID = "ca-app-pub-2085668494796958/3359180521"
     }
 
     private val categoryId: Int = savedStateHandle.get<Int>(CATEGORY_ID_KEY) ?: 0
     private val categoryName: String = savedStateHandle.get<String>(CATEGORY_NAME_KEY) ?: "Unknown"
-    private val questionAmount = 10
+    private val questionAmount = 15
 
     private val _uiState = MutableStateFlow(QuizUiState(
         currentQuestionIndex = savedStateHandle.get<Int>(CURRENT_INDEX_KEY) ?: 0,
         score = savedStateHandle.get<Int>(SCORE_KEY) ?: 0,
         isAnswerSubmitted = savedStateHandle.get<Boolean>(IS_SUBMITTED_KEY) ?: false,
         isQuizFinished = savedStateHandle.get<Boolean>(IS_FINISHED_KEY) ?: false
-        // userAnswers SavedStateHandle'da saklanmıyor, her seferinde sıfırdan oluşur
     ))
     val uiState: StateFlow<QuizUiState> = _uiState.asStateFlow()
 
@@ -79,11 +75,11 @@ class QuizViewModel @Inject constructor(
             return
         }
         isAdLoading = true
-        Timber.tag("QuizAd").i("Requesting new Interstitial Ad from ID: $AD_UNIT_ID")
+        Timber.tag("QuizAd").i("Requesting new Interstitial Ad from ID: $interstitialAdUnitId")
         val adRequest = AdRequest.Builder().build()
         InterstitialAd.load(
             application.applicationContext,
-            AD_UNIT_ID,
+            interstitialAdUnitId,
             adRequest,
             object : InterstitialAdLoadCallback() {
                 override fun onAdLoaded(interstitialAd: InterstitialAd) {
@@ -107,14 +103,14 @@ class QuizViewModel @Inject constructor(
                 override fun onAdDismissedFullScreenContent() {
                     Timber.tag("QuizAd").d("Ad was dismissed.")
                     mInterstitialAd = null
-                    loadInterstitialAd() // Bir sonraki reklamı yükle
+                    loadInterstitialAd()
                     onAdDismissedOrFailed()
                 }
 
                 override fun onAdFailedToShowFullScreenContent(adError: AdError) {
                     Timber.tag("QuizAd").e("Ad failed to show: ${adError.message} (Code: ${adError.code})")
                     mInterstitialAd = null
-                    loadInterstitialAd() // Bir sonraki reklamı yükle
+                    loadInterstitialAd()
                     onAdDismissedOrFailed()
                 }
 
@@ -146,9 +142,6 @@ class QuizViewModel @Inject constructor(
             Timber.tag("QuizVM").d("Quiz was already finished. Loading ad for potential action.")
             loadInterstitialAd()
         }
-        // Her başlangıçta bir reklam yüklemeyi deneyebiliriz, UI'da ihtiyaç duyulma olasılığı yüksek.
-        // Özellikle sonuç ekranından geri gelinirse diye.
-        // loadInterstitialAd() // Bu satır eklenebilir, ancak showInterstitialAd zaten hazır değilse yüklemeye çalışacak.
     }
 
     private fun loadQuestions() {
@@ -199,7 +192,7 @@ class QuizViewModel @Inject constructor(
     fun submitAnswer() {
         val currentState = _uiState.value
         val questionsData = (currentState.questions as? Resource.Success)?.data
-            ?: (currentState.questions as? Resource.Error)?.data?.takeIf { it.isNotEmpty() } // Hata durumunda da veri olabilir
+            ?: (currentState.questions as? Resource.Error)?.data?.takeIf { it.isNotEmpty() }
             ?: run {
                 Timber.tag("QuizVM").e("SubmitAnswer: Questions data is not available or empty.")
                 return
@@ -263,8 +256,6 @@ class QuizViewModel @Inject constructor(
 
     fun restartQuiz() {
         Timber.tag("QuizVM").i("Restarting quiz...")
-        // UiState'i sıfırla ama questions'ı hemen Loading yapma, loadQuestions yapacak.
-        // Önceki soruların kısa bir an görünmesini engellemek için questions'ı Loading yapabiliriz.
         _uiState.value = QuizUiState(questions = Resource.Loading())
         savedStateHandle.keys().forEach { key -> savedStateHandle.remove<Any>(key) }
 

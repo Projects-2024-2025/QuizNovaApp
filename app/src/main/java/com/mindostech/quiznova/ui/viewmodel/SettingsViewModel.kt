@@ -18,7 +18,6 @@ class SettingsViewModel @Inject constructor(
     networkMonitor: NetworkMonitor
 ) : ViewModel() {
 
-    // Repository'den gelen tema Flow'unu alıp bir StateFlow'a dönüştürüyoruz.
     val currentTheme: StateFlow<ThemePreference> = themeSettingsRepository.themePreferenceFlow
         .stateIn(
             scope = viewModelScope,
@@ -26,7 +25,6 @@ class SettingsViewModel @Inject constructor(
             initialValue = ThemePreference.LIGHT
         )
 
-    // NetworkMonitor'den gelen internet durumunu tutacak StateFlow
     val isOnline: StateFlow<Boolean> = networkMonitor.isOnline
         .stateIn(
             scope = viewModelScope,
@@ -34,7 +32,6 @@ class SettingsViewModel @Inject constructor(
             initialValue = true
         )
 
-    // Kullanıcı yeni bir tema seçtiğinde çağrılacak fonksiyon
     fun changeTheme(newPreference: ThemePreference) {
         viewModelScope.launch {
             themeSettingsRepository.saveThemePreference(newPreference)

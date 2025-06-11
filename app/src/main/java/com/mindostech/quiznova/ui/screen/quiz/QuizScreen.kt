@@ -59,13 +59,11 @@ fun QuizScreen(
         else -> 24.dp
     }
 
-    // Quiz DEVAM EDİYORKEN sistem geri tuşu basılırsa -> Çıkış onayı göster
     BackHandler(enabled = !uiState.isQuizFinished && !showExitDialog) {
         Timber.tag("QuizScreen").d("BackHandler: Quiz in progress. Showing exit dialog.")
         showExitDialog = true
     }
 
-    // Quiz BİTMİŞKEN (sonuç ekranı görünürken) sistem geri tuşu basılırsa -> Reklam göster, sonra geri git
     BackHandler(enabled = uiState.isQuizFinished) {
         if (activity != null) {
             Timber.tag("QuizScreen").d("BackHandler: Quiz finished. Showing ad then popBackStack.")
@@ -162,13 +160,13 @@ fun QuizScreen(
                 ) { questionsState ->
                     when (questionsState) {
                         is Resource.Loading -> {
-                            GenericLoadingStateView( // ESKİ LoadingAnimationQuiz YERİNE
+                            GenericLoadingStateView(
                                 loadingText = stringResource(R.string.loading_questions),
                                 modifier = Modifier.align(Alignment.Center)
                             )
                         }
                         is Resource.Error -> {
-                            GenericErrorStateView( // ESKİ ErrorViewQuiz YERİNE
+                            GenericErrorStateView(
                                 modifier = Modifier.align(Alignment.Center),
                                 errorMessage = questionsState.message ?: stringResource(R.string.error_loading_questions),
                                 onRetryClick = viewModel::retryLoadQuestions
@@ -177,9 +175,9 @@ fun QuizScreen(
                         is Resource.Success -> {
                             val questions = questionsState.data
                             if (questions.isNullOrEmpty()) {
-                                GenericEmptyStateView( // ESKİ EmptyQuestionsView YERİNE
+                                GenericEmptyStateView(
                                     title = stringResource(R.string.quiz_no_questions_found),
-                                    icon = Icons.Filled.CloudOff, // Veya istediğiniz başka bir ikon
+                                    icon = Icons.Filled.CloudOff,
                                     actionButtonText = stringResource(R.string.back),
                                     onActionButtonClick = {
                                         Timber.tag("QuizScreen").d("EmptyQuestionsView: Navigating back.")
@@ -242,7 +240,7 @@ fun QuizScreen(
                                             )
                                         } else {
                                             Timber.tag("QuizScreen").e("Error: Current question is null unexpectedly when quiz is not finished.")
-                                            GenericErrorStateView( // Beklenmedik soru hatası için de genel hata görünümü
+                                            GenericErrorStateView(
                                                 modifier = Modifier.align(Alignment.Center),
                                                 errorMessage = stringResource(R.string.error_unexpected_question),
                                                 onRetryClick = { viewModel.restartQuiz() }

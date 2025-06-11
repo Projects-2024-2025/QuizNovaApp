@@ -12,7 +12,6 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
-import androidx.compose.runtime.getValue
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -25,8 +24,6 @@ import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.navigation.NavController
-import com.airbnb.lottie.compose.LottieCompositionSpec
-import com.airbnb.lottie.compose.rememberLottieComposition
 import com.mindostech.quiznova.R
 import com.mindostech.quiznova.ui.navigation.Screen
 import com.mindostech.quiznova.ui.theme.BrightBlue
@@ -49,12 +46,11 @@ fun SplashScreen(navController: NavController) {
         }
     }
 
-    // Logo animasyonu için Animatable state'ler
-    val logoAlpha = remember { Animatable(0f) } // Başlangıçta alfa 0 (görünmez)
-    val logoScale = remember { Animatable(0.8f) } // Başlangıçta %80 ölçekli
+    val logoAlpha = remember { Animatable(0f) }
+    val logoScale = remember { Animatable(0.8f) }
 
     LaunchedEffect(key1 = true) {
-        delay(logoAnimationDelay) // Kısa bir bekleme
+        delay(logoAnimationDelay)
         launch {
             logoAlpha.animateTo(
                 targetValue = 1f,
@@ -65,28 +61,17 @@ fun SplashScreen(navController: NavController) {
             logoScale.animateTo(
                 targetValue = 1f,
                 animationSpec = tween(durationMillis = logoAnimationDuration, easing = FastOutSlowInEasing)
-                // Veya spring animasyonu da kullanabilirsiniz:
-                // animationSpec = spring(
-                //     dampingRatio = Spring.DampingRatioMediumBouncy,
-                //     stiffness = Spring.StiffnessLow
-                // )
             )
         }
     }
 
     val gradientBackground = Brush.verticalGradient(
         colors = listOf(
-            DarkIndigo,      // Koyu morumsu üst renk
-            VibrantPurple,   // Orta katman
-            BrightBlue       // Alt katman
+            DarkIndigo,
+            VibrantPurple,
+            BrightBlue
         )
     )
-
-
-
-    // Lottie animasyonu (isteğe bağlı, logonuzla birlikte veya onun yerine olabilir)
-    val lottieComposition by rememberLottieComposition(LottieCompositionSpec.RawRes(R.raw.lottie_splash))
-    // val lottieProgress by animateLottieCompositionAsState(lottieComposition, iterations = 1, speed = 1f) // Eğer Lottie'yi de kullanacaksanız
 
     Box(
         modifier = Modifier
@@ -96,31 +81,21 @@ fun SplashScreen(navController: NavController) {
     ) {
         Column(
             horizontalAlignment = Alignment.CenterHorizontally,
-            verticalArrangement = Arrangement.Center // İçeriği dikeyde de ortala
+            verticalArrangement = Arrangement.Center
         ) {
-            // Lottie Animasyonu (Eğer kullanmak isterseniz)
-            // LottieAnimation(
-            //     composition = lottieComposition,
-            //     progress = { lottieProgress },
-            //     modifier = Modifier.size(250.dp) // Boyutunu ayarlayın
-            // )
-            // Spacer(modifier = Modifier.height(16.dp)) // Lottie ve logo arası boşluk
-
-            // Logo
             Image(
-                painter = painterResource(id = R.drawable.logo_splash), // Logonuzun drawable kaynağı
+                painter = painterResource(id = R.drawable.logo_splash),
                 contentDescription = "QuizNova Logo",
                 modifier = Modifier
-                    .size(160.dp) // Logo boyutu
-                    .scale(logoScale.value) // Animasyonlu ölçek
-                    .alpha(logoAlpha.value) // Animasyonlu alfa
-                    .clip(CircleShape) // Dairesel kırpma (isteğe bağlı)
-                    .border(2.dp, Color.White.copy(alpha = logoAlpha.value * 0.5f), CircleShape) // Alfa ile solan border (isteğe bağlı)
+                    .size(160.dp)
+                    .scale(logoScale.value)
+                    .alpha(logoAlpha.value)
+                    .clip(CircleShape)
+                    .border(2.dp, Color.White.copy(alpha = logoAlpha.value * 0.5f), CircleShape)
             )
 
             Spacer(modifier = Modifier.height(24.dp))
 
-            // Uygulama Adı (Logonun alfasından biraz daha sonra belirebilir)
             val textAlphaDelay = logoAnimationDelay + logoAnimationDuration / 2
             val textAlpha = remember { Animatable(0f) }
             LaunchedEffect(key1 = true) {
@@ -130,10 +105,10 @@ fun SplashScreen(navController: NavController) {
 
             Text(
                 text = "QuizNova",
-                style = MaterialTheme.typography.headlineLarge, // Responsive stil kullan
-                fontWeight = FontWeight.ExtraBold, // Gerekirse style'daki fontWeight'ı ezer
-                color = Color.White.copy(alpha = textAlpha.value), // Alfa animasyonlu renk
-                modifier = Modifier.alpha(textAlpha.value) // Genel alfa
+                style = MaterialTheme.typography.headlineLarge,
+                fontWeight = FontWeight.ExtraBold,
+                color = Color.White.copy(alpha = textAlpha.value),
+                modifier = Modifier.alpha(textAlpha.value)
             )
         }
     }

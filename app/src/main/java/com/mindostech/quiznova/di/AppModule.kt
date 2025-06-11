@@ -7,6 +7,7 @@ import com.mindostech.quiznova.data.local.QuizDatabase
 import com.mindostech.quiznova.data.remote.OpenTriviaApi
 import com.mindostech.quiznova.util.NetworkMonitor // NetworkMonitor'ü de ekleyelim
 import com.google.gson.GsonBuilder
+import com.mindostech.quiznova.R
 import com.mindostech.quiznova.data.datasource.local.QuizLocalDataSource
 import com.mindostech.quiznova.data.datasource.local.QuizLocalDataSourceImpl
 import com.mindostech.quiznova.data.datasource.remote.QuizRemoteDataSource
@@ -26,6 +27,7 @@ import okhttp3.logging.HttpLoggingInterceptor
 import retrofit2.Retrofit
 import retrofit2.converter.gson.GsonConverterFactory
 import java.util.concurrent.TimeUnit
+import javax.inject.Named
 import javax.inject.Singleton
 
 @Module
@@ -80,16 +82,6 @@ object DataModule {
         return database.quizDao()
     }
 
-    // NetworkMonitor'ü Singleton olarak sağlıyoruz (zaten @Singleton ile işaretliydi ama burada da belirtmek iyi pratik).
-    // Hilt constructor injection sayesinde bunu otomatik yapabilir ama burada göstermek için ekledim.
-    // @Provides
-    // @Singleton
-    // fun provideNetworkMonitor(@ApplicationContext context: Context): NetworkMonitor {
-    //     return NetworkMonitor(context)
-    // }
-
-    // Repository'yi de burada provide edeceğiz (bir sonraki adımda oluşturunca)
-
     @Provides
     @Singleton
     fun provideQuizRemoteDataSource(@ApplicationContext context: Context,api: OpenTriviaApi): QuizRemoteDataSource {
@@ -116,13 +108,20 @@ object DataModule {
     @Provides
     @Singleton
     fun provideThemeSettingsRepository(@ApplicationContext context: Context): ThemeSettingsRepository {
-        // Bu fonksiyonun DataModule object'inin İÇİNDE olduğundan emin olun
         return ThemeSettingsRepository(context)
     }
 
     @Provides
     @Singleton
-    fun provideHtmlDecoder(): HtmlDecoder { // Parametre yok, dönüş türü Arayüz
-        return AndroidHtmlDecoder() // Implementasyonu doğrudan oluşturup döndür
+    fun provideHtmlDecoder(): HtmlDecoder {
+        return AndroidHtmlDecoder()
     }
+
+    @Provides
+    @Named("InterstitialAdUnitId")
+    @Singleton
+    fun provideInterstitialAdUnitId(@ApplicationContext context: Context): String {
+        return context.getString(R.string.admob_interstitial_ad_unit_id)
+    }
+
 }

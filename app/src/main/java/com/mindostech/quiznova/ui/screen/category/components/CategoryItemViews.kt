@@ -34,17 +34,13 @@ import com.mindostech.quiznova.data.local.entity.CategoryEntity
 
 @Composable
 fun CategoryGridItem(
-    modifier: Modifier = Modifier, // Dışarıdan gelen modifier'ı (aspectRatio içeren) alacak
+    modifier: Modifier = Modifier,
     category: CategoryEntity,
     icon: ImageVector,
     accentColor: Color,
     onClick: () -> Unit,
     isCompact: Boolean
 ) {
-    // ÖNEMLİ NOT: Aşağıdaki dimensionResource() kullanımları için
-    // projenizde res/values/dimens.xml dosyasında ilgili boyutları tanımlamanız gerekir.
-    // Örnek: <dimen name="card_grid_padding">12dp</dimen>
-    // Eğer tanımlamak istemiyorsanız, doğrudan .dp değerlerini kullanın (örn: .padding(12.dp)).
     val cardPadding = if (isCompact) 8.dp else 12.dp
     val iconBackgroundSize = if (isCompact) 56.dp else 64.dp
     val iconSize = if (isCompact) 30.dp else 36.dp
@@ -53,7 +49,7 @@ fun CategoryGridItem(
 
     Card(
         onClick = onClick,
-        modifier = modifier.fillMaxWidth(), // AspectRatio modifier'ı dışarıdan uygulanacak
+        modifier = modifier.fillMaxWidth(),
         shape = MaterialTheme.shapes.large,
         colors = CardDefaults.cardColors(
             containerColor = MaterialTheme.colorScheme.surfaceColorAtElevation(3.dp)
@@ -65,7 +61,7 @@ fun CategoryGridItem(
         border = BorderStroke(1.dp, accentColor.copy(alpha = 0.5f))
     ) {
         Box(modifier = Modifier
-            .fillMaxSize() // Oranla belirlenen alana yayıl
+            .fillMaxSize()
             .background(
                 brush = Brush.verticalGradient(
                     colors = listOf(
@@ -79,31 +75,31 @@ fun CategoryGridItem(
             Column(
                 modifier = Modifier
                     .fillMaxSize()
-                    .padding(cardPadding), // İç padding
+                    .padding(cardPadding),
                 horizontalAlignment = Alignment.CenterHorizontally,
-                verticalArrangement = Arrangement.Center // İçeriği dikeyde ortala
+                verticalArrangement = Arrangement.Center
             ) {
                 Box(
                     modifier = Modifier
-                        .size(iconBackgroundSize) // İkon arka plan boyutu
+                        .size(iconBackgroundSize)
                         .clip(CircleShape)
                         .background(accentColor.copy(alpha = 0.15f)),
                     contentAlignment = Alignment.Center
                 ) {
                     Icon(
                         imageVector = icon,
-                        contentDescription = category.name, // Orijinal isim kalsın
-                        modifier = Modifier.size(iconSize), // İkon boyutu
+                        contentDescription = category.name,
+                        modifier = Modifier.size(iconSize),
                         tint = accentColor
                     )
                 }
-                Spacer(modifier = Modifier.height(spacerHeight)) // İkon ve metin arası boşluk
+                Spacer(modifier = Modifier.height(spacerHeight))
                 Text(
-                    text = category.name.substringAfterLast(':', category.name).trim(), // Kısaltılmış metin
-                    style = textStyle, // Stil ayarlanabilir
+                    text = category.name.substringAfterLast(':', category.name).trim(),
+                    style = textStyle,
                     fontWeight = FontWeight.Bold,
                     textAlign = TextAlign.Center,
-                    maxLines = 2, // Kare kart için 2 satır genellikle yeterli
+                    maxLines = 2,
                     overflow = TextOverflow.Ellipsis,
                     color = MaterialTheme.colorScheme.onSurface
                 )
@@ -122,8 +118,7 @@ fun CategoryPageItem(
     isCompactWidth: Boolean,
     modifier: Modifier = Modifier
 ) {
-    // Kartın yüksekliğini ve içindeki elemanların boyutlarını ayarla
-    val cardFillMaxHeight = if (isCompactHeight) 0.9f else 0.85f // Pager içindeki kartın yüksekliği
+    val cardFillMaxHeight = if (isCompactHeight) 0.9f else 0.85f
     val cardInternalPadding = if (isCompactWidth || isCompactHeight) 24.dp else 32.dp
     val iconContainerSize = if (isCompactWidth || isCompactHeight) 80.dp else 96.dp
     val iconActualSize = if (isCompactWidth || isCompactHeight) 48.dp else 56.dp
@@ -165,20 +160,20 @@ fun CategoryPageItem(
                 ) {
                     Icon(
                         imageVector = icon,
-                        contentDescription = category.name, // Orijinal isim kalsın
+                        contentDescription = category.name,
                         modifier = Modifier.size(iconActualSize),
                         tint = accentColor
                     )
                 }
                 Spacer(modifier = Modifier.height(spacerHeight))
                 Text(
-                    text = category.name.substringAfterLast(':', category.name).trim(), // Kısaltılmış metin
+                    text = category.name.substringAfterLast(':', category.name).trim(),
                     style = textStyle,
                     fontWeight = FontWeight.ExtraBold,
                     color = MaterialTheme.colorScheme.onSurface,
                     textAlign = TextAlign.Center,
                     modifier = Modifier.padding(horizontal = 8.dp),
-                    maxLines = 2, // Kısaltıldığı için 2 satır yeterli olabilir
+                    maxLines = 2,
                     overflow = TextOverflow.Ellipsis
                 )
             }

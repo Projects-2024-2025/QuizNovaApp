@@ -34,30 +34,20 @@ class MainActivity : ComponentActivity() {
         val splashScreen = installSplashScreen()
 
         super.onCreate(savedInstanceState)
-        // 2. Sistem splash ekranının ne zaman gizleneceğini belirleyin
-        // Kendi Composable içeriğimiz (AppNavigation -> SplashScreen) hazır olana kadar
-        // sistem splash'ını ekranda tut.
-        splashScreen.setKeepOnScreenCondition { !isAppContentReady } // EKLENDİ
+        splashScreen.setKeepOnScreenCondition { !isAppContentReady }
 
-        // MobileAds SDK başlatma
-        // Application sınıfında olması daha iyi ama burada da kalabilir.
-        // Uygulama bağlamı her zaman non-null olacağı için null kontrolüne gerek yok.
         CoroutineScope(Dispatchers.IO).launch {
             MobileAds.initialize(applicationContext) {}
         }
 
-        WindowCompat.setDecorFitsSystemWindows(window, false) // Edge-to-edge UI
+        WindowCompat.setDecorFitsSystemWindows(window, false)
 
         setContent {
             val currentThemePreference by themeSettingsRepository.themePreferenceFlow
                 .collectAsState(initial = ThemePreference.LIGHT)
 
-            // Composable ağacı ilk kez oluşturulduğunda veya belirli bir koşul sağlandığında
-            // isAppContentReady'yi true yaparak sistem splash'ının kalkmasını sağlayın.
-            // Bu, AppNavigation veya SplashScreen'in kendisi yüklendiğinde olabilir.
-            // SideEffect, kompozisyon her başarıyla tamamlandığında çalışır.
-            // Sadece bir kez çalıştırmak için bir kontrol ekliyoruz.
-            SideEffect { // EKLENDİ
+
+            SideEffect {
                 if (!isAppContentReady) {
                     isAppContentReady = true
                     Timber.d("MainActivity: App content is now considered ready, system splash should dismiss.")

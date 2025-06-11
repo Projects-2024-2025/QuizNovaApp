@@ -5,9 +5,8 @@ import androidx.compose.material.icons.filled.*
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.vector.ImageVector
 
-// Kategori İkonlarını Eşleştirme Fonksiyonu
 fun getIconForCategory(categoryName: String): ImageVector {
-    val nameToCheck = categoryName // Veya gerekirse burada da kısaltma yapılabilir, ama genellikle gerekmez.
+    val nameToCheck = categoryName
     return when {
         nameToCheck.contains("Knowledge", ignoreCase = true) -> Icons.Filled.AutoStories
         nameToCheck.contains("Books", ignoreCase = true) -> Icons.Filled.LibraryBooks
@@ -33,11 +32,10 @@ fun getIconForCategory(categoryName: String): ImageVector {
         nameToCheck.contains("Gadgets", ignoreCase = true) -> Icons.Filled.PhonelinkSetup
         nameToCheck.contains("Japanese Anime & Manga", ignoreCase = true) -> Icons.Filled.Face
         nameToCheck.contains("Cartoon & Animations", ignoreCase = true) -> Icons.Filled.Animation
-        else -> Icons.Filled.Category // Varsayılan ikon
+        else -> Icons.Filled.Category
     }
 }
 
-// İkonlar ve Kart Arka Planları İçin Renk Paleti
 val vibrantIconColors = listOf(
     Color(0xFFEF5350), Color(0xFFEC407A), Color(0xFFAB47BC), Color(0xFF7E57C2),
     Color(0xFF5C6BC0), Color(0xFF42A5F5), Color(0xFF29B6F6), Color(0xFF26C6DA),

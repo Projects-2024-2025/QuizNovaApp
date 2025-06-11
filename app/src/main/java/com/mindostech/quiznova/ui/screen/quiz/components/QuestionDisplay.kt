@@ -108,34 +108,30 @@ fun QuestionContent(
     val submitButtonVerticalPadding = if (isVerySmallScreenHeight) 8.dp else 16.dp
     val submitButtonFontSize = if (isCompactScreen) 14.sp else 16.sp
 
-    // İlerleme çubuğu için animasyonlu değer
     val progress by animateFloatAsState(
         targetValue = if (totalQuestions > 0) (uiState.currentQuestionIndex + 1).toFloat() / totalQuestions.toFloat() else 0f,
         animationSpec = tween(durationMillis = 600, easing = FastOutSlowInEasing),
         label = "QuizProgressAnimation"
     )
 
-    // Doğru/Yanlış geri bildirimi için Lottie animasyonları
     val correctComposition by rememberLottieComposition(LottieCompositionSpec.RawRes(R.raw.lottie_correct))
     val wrongComposition by rememberLottieComposition(LottieCompositionSpec.RawRes(R.raw.lottie_error))
 
-    // Cevap geri bildirim animasyonunun görünürlük durumu
     var showAnswerFeedback by remember(uiState.currentQuestionIndex) { mutableStateOf(false) }
     LaunchedEffect(uiState.isAnswerSubmitted) {
         if (uiState.isAnswerSubmitted) {
             showAnswerFeedback = true
-            delay(1300L) // Animasyon süresi kadar bekle
-            showAnswerFeedback = false // Otomatik gizle
+            delay(1300L)
+            showAnswerFeedback = false
         }
     }
 
     Column(
         modifier = modifier
             .fillMaxSize()
-            .padding(vertical = 16.dp), // Üst/alt ve hafif yan boşluk
+            .padding(vertical = 16.dp),
         horizontalAlignment = Alignment.CenterHorizontally
     ) {
-        // Üst Kısım: İlerleme Çubuğu ve Soru Sayacı
         Row(
             verticalAlignment = Alignment.CenterVertically,
             modifier = Modifier
@@ -148,8 +144,8 @@ fun QuestionContent(
                     .weight(1f)
                     .height(progressBarHeight)
                     .clip(RoundedCornerShape(progressBarHeight / 2)),
-                color = MaterialTheme.colorScheme.primary, // Ana tema rengi
-                trackColor = MaterialTheme.colorScheme.surfaceVariant // İz rengi
+                color = MaterialTheme.colorScheme.primary,
+                trackColor = MaterialTheme.colorScheme.surfaceVariant
             )
             Spacer(modifier = Modifier.width(16.dp))
             Text(
@@ -160,14 +156,12 @@ fun QuestionContent(
             )
         }
 
-        // Orta Kısım: Soru Metni ve Cevap Seçenekleri Alanı
         Box(
             modifier = Modifier
-                .weight(1f) // Kalan dikey alanı doldur
+                .weight(1f)
                 .fillMaxWidth(),
-            contentAlignment = Alignment.Center // İçeriği dikeyde ortala
+            contentAlignment = Alignment.Center
         ) {
-            // Soru değiştiğinde animasyonlu geçiş
             AnimatedContent(
                 targetState = question,
                 transitionSpec = {
@@ -184,9 +178,8 @@ fun QuestionContent(
                     modifier = Modifier
                         .fillMaxSize()
                         .verticalScroll(rememberScrollState())
-                        .padding(bottom = 16.dp) // Butonla arasına boşluk
+                        .padding(bottom = 16.dp)
                 ) {
-                    // Soru Metni
                     Text(
                         text = currentQuestion.question,
                         style = MaterialTheme.typography.headlineSmall,
@@ -200,22 +193,20 @@ fun QuestionContent(
                         )
                     )
 
-                    // Cevap Seçenekleri Listesi
                     currentQuestion.allAnswers.forEach { answer ->
                         AnswerOption(
                             text = answer,
                             isSelected = uiState.selectedAnswer == answer,
                             isCorrect = answer == currentQuestion.correctAnswer,
                             isSubmitted = uiState.isAnswerSubmitted,
-                            enabled = !uiState.isAnswerSubmitted, // Gönderildiyse tıklanamaz
-                            onSelect = { onAnswerSelected(answer) } // Seçim callback'i
+                            enabled = !uiState.isAnswerSubmitted,
+                            onSelect = { onAnswerSelected(answer) }
                         )
-                        Spacer(modifier = Modifier.height(answerOptionSpacing)) // Seçenekler arası boşluk
+                        Spacer(modifier = Modifier.height(answerOptionSpacing))
                     }
                 }
-            } // End AnimatedContent (Soru)
+            }
 
-            // Cevap Geri Bildirim Animasyonu (Lottie) - Soru metninin üzerinde görünür
             androidx.compose.animation.AnimatedVisibility(
                 visible = showAnswerFeedback,
                 enter = fadeIn(tween(150)) + scaleIn(initialScale = 0.7f, animationSpec = spring(
@@ -231,14 +222,13 @@ fun QuestionContent(
                 LottieAnimation(
                     composition = composition,
                     iterations = 1, // Tek sefer oyna
-                    modifier = Modifier.size(lottieFeedbackSize) // Animasyon boyutu
+                    modifier = Modifier.size(lottieFeedbackSize)
                 )
             }
-        } // End Box (Orta Kısım)
+        }
 
-        // Alt Kısım: Gönder / Sonraki Soru Butonu
         AnimatedContent(
-            targetState = uiState.isAnswerSubmitted, // Gönderilme durumuna göre buton değişir
+            targetState = uiState.isAnswerSubmitted,
             transitionSpec = {
                 val enter = slideInVertically(initialOffsetY = { it }, animationSpec = tween(300, delayMillis = 50)) + fadeIn(
                     tween(250, delayMillis = 50)
@@ -250,7 +240,6 @@ fun QuestionContent(
             },
             label = "SubmitNextButtonSwitch"
         ) { isSubmitted ->
-            // Buton metnini ve ikonunu duruma göre belirle
             val buttonTextRes = if (isSubmitted) {
                 if (uiState.currentQuestionIndex < totalQuestions - 1) R.string.quiz_next_question else R.string.quiz_finish
             } else {
@@ -258,7 +247,6 @@ fun QuestionContent(
             }
             val buttonIcon = if (isSubmitted) Icons.AutoMirrored.Filled.ArrowForward else Icons.Filled.Check
             val onClickAction = if (isSubmitted) onNextQuestion else onSubmitAnswer
-            // Buton aktifliği: Gönderildiyse veya bir cevap seçildiyse aktif
             val isEnabled = isSubmitted || uiState.selectedAnswer != null
 
             AppPrimaryButton (
@@ -269,14 +257,14 @@ fun QuestionContent(
                     .padding(
                         bottom = submitButtonVerticalPadding,
                         top = if (isVerySmallScreenHeight) 4.dp else 8.dp
-                    ), // Alt ve üst boşluk
+                    ),
             ) {
                 Icon(buttonIcon, contentDescription = null, modifier = Modifier.size(ButtonDefaults.IconSize))
                 Spacer(Modifier.size(ButtonDefaults.IconSpacing))
                 Text(stringResource(buttonTextRes), fontWeight = FontWeight.Bold, fontSize = submitButtonFontSize)
             }
-        } // End AnimatedContent (Buton)
-    } // End Column (QuestionContent)
+        }
+    }
 }
 
 @Composable
@@ -298,7 +286,6 @@ fun AnswerOption(
     val answerTextStyle = if (isCompactScreen) MaterialTheme.typography.bodyMedium else MaterialTheme.typography.bodyLarge
     val iconBoxSize = if (isCompactScreen) 20.dp else 24.dp
 
-    // Hedef renkleri, ölçeği ve yüksekliği duruma göre belirle
     val targetBorderColor: Color
     val targetBackgroundColor: Color
     val targetTextColor: Color
@@ -306,35 +293,35 @@ fun AnswerOption(
     val targetElevation: Dp
 
     when {
-        isSubmitted && isCorrect -> { // Gönderildi ve Doğru
-            targetBorderColor = SuccessGreen // Tema'dan al
+        isSubmitted && isCorrect -> {
+            targetBorderColor = SuccessGreen
             targetBackgroundColor = SuccessGreen.copy(alpha = 0.15f)
             targetTextColor = MaterialTheme.colorScheme.onSurface
             targetScale = 1f
             targetElevation = 2.dp
         }
-        isSubmitted && isSelected && !isCorrect -> { // Gönderildi, Seçili ama Yanlış
-            targetBorderColor = ErrorRed // Tema'dan al
+        isSubmitted && isSelected && !isCorrect -> {
+            targetBorderColor = ErrorRed
             targetBackgroundColor = ErrorRed.copy(alpha = 0.15f)
             targetTextColor = MaterialTheme.colorScheme.onSurface
             targetScale = 1f
             targetElevation = 2.dp
         }
-        isSubmitted && !isSelected && isCorrect -> { // Gönderildi, Seçilmedi ama Doğruydu
+        isSubmitted && !isSelected && isCorrect -> {
             targetBorderColor = SuccessGreen.copy(alpha = 0.5f)
             targetBackgroundColor = MaterialTheme.colorScheme.surfaceColorAtElevation(1.dp)
             targetTextColor = MaterialTheme.colorScheme.onSurfaceVariant
             targetScale = 1f
             targetElevation = 1.dp
         }
-        !isSubmitted && isSelected -> { // Gönderilmedi ve Seçili
+        !isSubmitted && isSelected -> {
             targetBorderColor = MaterialTheme.colorScheme.primary
             targetBackgroundColor = MaterialTheme.colorScheme.primary.copy(alpha = 0.10f)
             targetTextColor = MaterialTheme.colorScheme.primary
-            targetScale = 1.03f // Hafif büyütme efekti
-            targetElevation = 4.dp // Belirgin gölge
+            targetScale = 1.03f
+            targetElevation = 4.dp
         }
-        else -> { // Varsayılan veya diğer durumlar
+        else -> {
             targetBorderColor = MaterialTheme.colorScheme.outline.copy(alpha = 0.6f)
             targetBackgroundColor = MaterialTheme.colorScheme.surfaceColorAtElevation(1.dp)
             targetTextColor = MaterialTheme.colorScheme.onSurface
@@ -343,7 +330,6 @@ fun AnswerOption(
         }
     }
 
-    // Değerler arasındaki animasyonlu geçişler
     val borderColor by animateColorAsState(targetValue = targetBorderColor, animationSpec = tween(350), label = "AnswerBorderColor")
     val backgroundColor by animateColorAsState(targetValue = targetBackgroundColor, animationSpec = tween(350), label = "AnswerBgColor")
     val textColor by animateColorAsState(targetValue = targetTextColor, animationSpec = tween(350), label = "AnswerTextColor")
@@ -355,37 +341,35 @@ fun AnswerOption(
     Card(
         modifier = modifier
             .fillMaxWidth()
-            .scale(scale) // Animasyonlu ölçek
-            .selectable( // Tıklanabilirlik
+            .scale(scale)
+            .selectable(
                 selected = isSelected,
                 onClick = onSelect,
-                enabled = enabled, // Sadece aktifken tıklanabilir
-                role = Role.RadioButton, // Erişilebilirlik rolü
+                enabled = enabled,
+                role = Role.RadioButton,
                 interactionSource = remember { MutableInteractionSource() },
-                indication = null // Varsayılan ripple efektini kaldır
+                indication = null
             ),
-        shape = MaterialTheme.shapes.medium, // Tema şekli
-        border = BorderStroke(1.5.dp, borderColor), // Animasyonlu kenarlık
-        colors = CardDefaults.cardColors(containerColor = backgroundColor), // Animasyonlu arka plan
-        elevation = CardDefaults.cardElevation(defaultElevation = elevation) // Animasyonlu yükseklik
+        shape = MaterialTheme.shapes.medium,
+        border = BorderStroke(1.5.dp, borderColor),
+        colors = CardDefaults.cardColors(containerColor = backgroundColor),
+        elevation = CardDefaults.cardElevation(defaultElevation = elevation)
     ) {
         Row(
             modifier = Modifier.padding(
                 horizontal = cardPaddingHorizontal,
                 vertical = cardPaddingVertical
-            ), // İç boşluk
+            ),
             verticalAlignment = Alignment.CenterVertically
         ) {
-            // Cevap Metni
             Text(
                 text = text,
                 style = answerTextStyle,
-                modifier = Modifier.weight(1f), // Kalan alanı doldur
-                color = textColor // Animasyonlu metin rengi
+                modifier = Modifier.weight(1f),
+                color = textColor
             )
             Spacer(modifier = Modifier.width(if (isCompactScreen) 8.dp else 12.dp))
 
-            // Sağdaki İkon/RadioButton Alanı (Animasyonlu Geçişli)
             Box(modifier = Modifier.size(iconBoxSize), contentAlignment = Alignment.Center) {
                 AnimatedContent(
                     targetState = isSubmitted,
@@ -397,7 +381,6 @@ fun AnswerOption(
                     label = "AnswerIconSwitch"
                 ) { submitted ->
                     if (submitted) {
-                        // Gönderildikten sonra: Doğru/Yanlış ikonu
                         val iconVector: ImageVector? = when {
                             isSelected && isCorrect -> Icons.Filled.CheckCircle
                             isSelected && !isCorrect -> Icons.Filled.Cancel
@@ -414,10 +397,9 @@ fun AnswerOption(
                             Icon(imageVector = iconVector, contentDescription = null, tint = tint)
                         }
                     } else {
-                        // Gönderilmeden önce: RadioButton
                         RadioButton(
                             selected = isSelected,
-                            onClick = null, // Tıklamayı Card hallediyor
+                            onClick = null,
                             enabled = enabled,
                             colors = RadioButtonDefaults.colors(
                                 selectedColor = MaterialTheme.colorScheme.primary,
@@ -425,8 +407,8 @@ fun AnswerOption(
                             )
                         )
                     }
-                } // End AnimatedContent (Icon)
-            } // End Box (Icon/Radio)
-        } // End Row
-    } // End Card
+                }
+            }
+        }
+    }
 }

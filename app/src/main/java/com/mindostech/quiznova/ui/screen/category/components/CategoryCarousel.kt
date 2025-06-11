@@ -76,7 +76,7 @@ fun CategoryCarousel(
 
     val indicatorVerticalPadding = if (isCompactHeight) 16.dp else 24.dp
     val indicatorHorizontalPadding = if (isCompactWidth) 24.dp else 32.dp
-    val indicatorDotSize = if (isCompactWidth) 6.dp else 8.dp // Hem width hem height için
+    val indicatorDotSize = if (isCompactWidth) 6.dp else 8.dp
     val indicatorSpacing = if (isCompactWidth) 6.dp else 8.dp
 
     val buttonFillMaxWidthFraction = if (isCompactWidth) 0.85f else 0.75f
@@ -89,7 +89,7 @@ fun CategoryCarousel(
         modifier = modifier.fillMaxSize(),
         horizontalAlignment = Alignment.CenterHorizontally
     ) {
-        Spacer(modifier = Modifier.height(topSpacerHeight)) // Pager'dan önceki boşluk.
+        Spacer(modifier = Modifier.height(topSpacerHeight))
 
         HorizontalPager(
             state = pagerState,
@@ -103,7 +103,7 @@ fun CategoryCarousel(
                 val icon = getIconForCategory(category.name)
                 val accentColor = vibrantIconColors[pageIndex % vibrantIconColors.size]
 
-                CategoryPageItem( // Carousel içindeki kart (kısaltılmış metin içeriyor)
+                CategoryPageItem(
                     category = category,
                     icon = icon,
                     accentColor = accentColor,
@@ -160,7 +160,6 @@ fun CategoryCarousel(
                 label = "ButtonTextAnim",
                 transitionSpec = { fadeIn(tween(200)) togetherWith fadeOut(tween(200)) }
             ) { name ->
-                // Buton metni için de kısaltılmış ismi kullanabiliriz (isteğe bağlı)
                 val displayName = name.substringAfterLast(':', name).trim()
                 Text(
                     text = if (displayName.isNotEmpty()) stringResource(R.string.start_quiz_button_short, displayName)

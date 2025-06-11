@@ -77,14 +77,10 @@ fun SettingsScreen(
                     color = MaterialTheme.colorScheme.primary,
                     modifier = Modifier
                         .padding(bottom = 8.dp)
-                        .semantics { heading() } // Accessibility: Marks this as a heading.
+                        .semantics { heading() }
                 )
 
-                // Iterate through available theme preferences (LIGHT, DARK).
                 ThemePreference.values().forEach { themePref ->
-                    // Skip SYSTEM preference if it's somehow still in the enum (it shouldn't be).
-                    // if (themePref == ThemePreference.SYSTEM) return@forEach
-
                     ThemePreferenceRow(
                         theme = themePref,
                         isSelected = currentTheme == themePref,
@@ -92,7 +88,6 @@ fun SettingsScreen(
                     )
                 }
                 Spacer(modifier = Modifier.height(24.dp))
-                // Other settings can be added here.
             }
         }
     }
@@ -113,7 +108,6 @@ private fun ThemePreferenceRow(
     val textRes = when (theme) {
         ThemePreference.LIGHT -> R.string.theme_light
         ThemePreference.DARK -> R.string.theme_dark
-        // ThemePreference.SYSTEM -> R.string.theme_system // SYSTEM is removed
     }
     val radioTag = "theme_radio_${theme.name.lowercase()}"
     val rowTag = "theme_row_${theme.name.lowercase()}"
@@ -124,22 +118,22 @@ private fun ThemePreferenceRow(
             .selectable(
                 selected = isSelected,
                 onClick = onSelected,
-                role = Role.RadioButton // Accessibility role.
+                role = Role.RadioButton
             )
             .padding(vertical = 12.dp)
-            .testTag(rowTag), // Test tag for UI testing.
+            .testTag(rowTag),
         verticalAlignment = Alignment.CenterVertically
     ) {
         RadioButton(
             selected = isSelected,
-            onClick = null, // Handled by Row's selectable.
-            modifier = Modifier.testTag(radioTag) // Test tag for UI testing.
+            onClick = null,
+            modifier = Modifier.testTag(radioTag)
         )
         Spacer(modifier = Modifier.width(16.dp))
         Text(
             text = stringResource(id = textRes),
             style = MaterialTheme.typography.bodyLarge,
-            color = MaterialTheme.colorScheme.onSurface // Ensure text color adapts to theme
+            color = MaterialTheme.colorScheme.onSurface
         )
     }
 }

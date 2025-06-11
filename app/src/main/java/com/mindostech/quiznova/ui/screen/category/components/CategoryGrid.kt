@@ -29,13 +29,13 @@ fun CategoryGridRegular(
 
     val numColumns = when {
         orientation == Configuration.ORIENTATION_LANDSCAPE -> {
-            when { // Yatay mod için genişliğe göre sütun
-                screenWidthDp < 600.dp -> 3 // Dar yatay (bazı telefonlar)
+            when {
+                screenWidthDp < 600.dp -> 3
                 screenWidthDp < 840.dp -> 4
                 else -> 5
             }
         }
-        else -> { // Dikey mod (mevcut mantığınız)
+        else -> {
             when {
                 screenWidthDp < 360.dp -> 2
                 screenWidthDp < 600.dp -> 2
@@ -49,11 +49,11 @@ fun CategoryGridRegular(
     val itemSpacing = if (screenWidthDp < 360.dp) 12.dp else 16.dp
 
     LazyVerticalGrid(
-        columns = GridCells.Fixed(numColumns), // Sütun sayısı
+        columns = GridCells.Fixed(numColumns),
         modifier = modifier.fillMaxSize(),
         contentPadding = PaddingValues(contentPaddingAll),
-        horizontalArrangement = Arrangement.spacedBy(itemSpacing), // Yatay boşluk
-        verticalArrangement = Arrangement.spacedBy(itemSpacing)   // Dikey boşluk
+        horizontalArrangement = Arrangement.spacedBy(itemSpacing),
+        verticalArrangement = Arrangement.spacedBy(itemSpacing)
     ) {
         itemsIndexed(
             items = categories,
@@ -62,14 +62,13 @@ fun CategoryGridRegular(
             val accentColor = vibrantIconColors[index % vibrantIconColors.size]
             val icon = getIconForCategory(category.name)
 
-            // Grid içindeki her bir kart (Kare görünüm ve kısaltılmış metin)
             CategoryGridItem(
                 category = category,
                 icon = icon,
                 accentColor = accentColor,
                 onClick = { onItemClick(category) },
                 isCompact = screenWidthDp < 380.dp,
-                modifier = Modifier.aspectRatio(1f) // Kare oranını uygula
+                modifier = Modifier.aspectRatio(1f)
             )
         }
     }

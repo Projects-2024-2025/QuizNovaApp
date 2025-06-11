@@ -44,15 +44,15 @@ fun CategoryScreen(
     viewModel: CategoryViewModel = hiltViewModel(),
     settingsViewModel: SettingsViewModel = hiltViewModel()
 ) {
-    val currentTheme by settingsViewModel.currentTheme.collectAsState() // Temayı buradan al
+    val currentTheme by settingsViewModel.currentTheme.collectAsState()
     val isOnline by settingsViewModel.isOnline.collectAsState()
     val categoriesState by viewModel.categories.collectAsState()
     var showMenu by remember { mutableStateOf(false) }
-    var isGridViewVisible by remember { mutableStateOf(true) } // Grid ile başla
+    var isGridViewVisible by remember { mutableStateOf(true) }
     val zoomOutThreshold = 0.85f
     val zoomInThreshold = 1.15f
 
-    val context = LocalContext.current // Context'i al
+    val context = LocalContext.current
     val privacyPolicyUrl = "https://MindosTech.github.io/quiznova-privacy-policy/"
 
 
@@ -63,7 +63,6 @@ fun CategoryScreen(
         lightAppBackgroundGradient()
     }
 
-    // Quiz ekranına yönlendirme fonksiyonu
     fun navigateToQuizLocal(category: CategoryEntity) {
         val route = Screen.Quiz.createRoute(category.id, category.name)
         try {
@@ -170,7 +169,7 @@ fun CategoryScreen(
             ) {
                 when (val currentState = categoriesState) {
                     is Resource.Loading -> {
-                        GenericLoadingStateView( // ESKİ LoadingAnimation YERİNE
+                        GenericLoadingStateView(
                             loadingText = stringResource(R.string.loading_categories),
                             modifier = Modifier.align(Alignment.Center)
                         )
@@ -178,9 +177,9 @@ fun CategoryScreen(
                     is Resource.Success -> {
                         val categories = (categoriesState as Resource.Success<List<CategoryEntity>>).data
                         if (categories.isNullOrEmpty()) {
-                            GenericEmptyStateView( // ESKİ EmptyStateView YERİNE
+                            GenericEmptyStateView(
                                 title = stringResource(R.string.category_empty_state),
-                                icon = Icons.Filled.SentimentDissatisfied, // Veya istediğiniz başka bir ikon
+                                icon = Icons.Filled.SentimentDissatisfied,
                                 modifier = Modifier.align(Alignment.Center)
                             )
                         } else {
@@ -194,8 +193,7 @@ fun CategoryScreen(
                                 }
                             ) { showGrid ->
                                 if (showGrid) {
-                                    // --- DEĞİŞİKLİK: Doğru grid fonksiyonu çağrılıyor ---
-                                    CategoryGridRegular( // <<<--- CategoryGridStaggered yerine
+                                    CategoryGridRegular(
                                         categories = categories,
                                         onItemClick = { category -> navigateToQuizLocal(category) }
                                     )
@@ -209,14 +207,14 @@ fun CategoryScreen(
                         }
                     }
                     is Resource.Error -> {
-                        GenericErrorStateView( // ESKİ ErrorView YERİNE
+                        GenericErrorStateView(
                             modifier = Modifier.align(Alignment.Center),
                             errorMessage = currentState.message ?: stringResource(R.string.error_unknown),
                             onRetryClick = { viewModel.refreshCategories() }
                         )
                     }
-                } // end when
-            } // end İçerik Box
-        } // end Arka Plan Box
-    } // end Scaffold
+                }
+            }
+        }
+    }
 }

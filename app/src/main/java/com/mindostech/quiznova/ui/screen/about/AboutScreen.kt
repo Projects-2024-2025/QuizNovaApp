@@ -2,7 +2,6 @@ package com.mindostech.quiznova.ui.screen.about
 
 import android.content.Intent
 import android.net.Uri
-import android.util.Log
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
@@ -13,7 +12,6 @@ import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.filled.Email
-import androidx.compose.material.icons.filled.Info
 import androidx.compose.material.icons.filled.People
 import androidx.compose.material.icons.filled.Policy
 import androidx.compose.material3.*
@@ -23,7 +21,6 @@ import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
-import androidx.compose.ui.graphics.ColorFilter
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
@@ -37,14 +34,12 @@ import com.mindostech.quiznova.BuildConfig
 import com.mindostech.quiznova.R
 import com.mindostech.quiznova.ui.navigation.Screen
 import com.mindostech.quiznova.ui.theme.DarkGreyText
-import com.mindostech.quiznova.ui.theme.NearWhite
 import com.mindostech.quiznova.ui.theme.darkAppBackgroundGradient
 import com.mindostech.quiznova.ui.theme.lightAppBackgroundGradient
 import com.mindostech.quiznova.ui.viewmodel.SettingsViewModel
-import com.mindostech.quiznova.util.NetworkMonitor
 import com.mindostech.quiznova.util.ThemePreference
+import timber.log.Timber
 import java.util.Calendar
-import kotlin.math.round
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -163,7 +158,6 @@ fun AboutScreen(
                 }
                 Spacer(modifier = Modifier.height(16.dp))
 
-                // Privacy Policy Link
                 OutlinedButton(
                     onClick = {
                         if (isOnline) {
@@ -171,13 +165,12 @@ fun AboutScreen(
                                 val intent = Intent(Intent.ACTION_VIEW, Uri.parse(privacyPolicyUrl))
                                 context.startActivity(intent)
                             } catch (e: Exception) {
-                                Log.e("CategoryScreen", "Could not open web privacy policy URL, falling back to internal.", e)
+                                Timber.e("Could not open web privacy policy URL, falling back to internal.")
 
                                 navController.navigate(Screen.PrivacyPolicy.route)
                             }
                         } else {
-                            // İnternet yoksa uygulama içi ekrana git
-                            Log.d("CategoryScreen", "No internet, opening internal privacy policy.")
+                            Timber.d("No internet, opening internal privacy policy.")
                             navController.navigate(Screen.PrivacyPolicy.route)
                         }
                     },
@@ -205,7 +198,7 @@ fun AboutScreen(
 }
 
 @Composable
-private fun AboutInfoCard( // Bu yardımcı Composable aynı kalabilir
+private fun AboutInfoCard(
     title: String,
     icon: androidx.compose.ui.graphics.vector.ImageVector,
     content: @Composable ColumnScope.() -> Unit
